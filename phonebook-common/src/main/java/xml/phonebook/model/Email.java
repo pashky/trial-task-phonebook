@@ -9,7 +9,7 @@ import org.simpleframework.xml.Root;
  * @author pashky
  */
 @Root(name = "Email")
-public final class Email {
+public final class Email implements Searchable {
     @Element(name = "Type")
     private final EmailType type;
     @Element(name = "Value")
@@ -62,5 +62,9 @@ public final class Email {
                 "email='" + email + '\'' +
                 ", type=" + type +
                 '}';
+    }
+
+    public boolean matches(String text) {
+        return getEmail().toLowerCase().contains(text.toLowerCase());
     }
 }

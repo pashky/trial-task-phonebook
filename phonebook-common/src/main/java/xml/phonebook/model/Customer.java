@@ -1,5 +1,6 @@
 package xml.phonebook.model;
 
+import org.apache.commons.collections.iterators.IteratorChain;
 import org.apache.commons.lang3.StringUtils;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -14,7 +15,7 @@ import java.util.*;
  * @author pashky
  */
 @Root(name = "Customer")
-public final class Customer {
+public final class Customer implements Searchable {
     @Element(name = "Name")
     private final String name;
 
@@ -35,6 +36,9 @@ public final class Customer {
 
     Customer(String name, String notes,
                      OrderedSet<Address> addresses, OrderedSet<Phone> phones, OrderedSet<Email> emails) {
+        if(name == null || addresses == null || phones == null || emails == null)
+            throw new NullPointerException("Can't be null");
+
         this.name = name;
         this.notes = notes;
         this.addresses = addresses;
@@ -147,5 +151,23 @@ public final class Customer {
                 ", emails=[" + StringUtils.join(emails, "; ") +
                 "], phones=" + StringUtils.join(phones, "; ") +
                 "]}";
+    }
+
+    public boolean matches(String text) {
+
+        String ltext = text.toLowerCase();
+        if(getName().contains(ltext) || getNotes().contains(ltext)) {
+            return true;
+        }
+
+        Iterator i = new IteratorChain(new Iterator[] {
+                getAddresses().iterator(), getPhones().iterator(), getEmails().iterator()
+        });
+        while(i.hasNext()) {
+            if(((Searchable)i.next()).matches(text))
+                return true;
+        }
+
+        return false;
     }
 }

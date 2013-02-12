@@ -1,5 +1,17 @@
 package xml.phonebook.storage;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.simpleframework.xml.Serializer;
+import xml.phonebook.model.Customer;
+import xml.phonebook.model.CustomerList;
+
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+
 /**
  * Created 12/02/2013 02:23
  *
@@ -7,22 +19,155 @@ package xml.phonebook.storage;
  */
 public class XmlStore {
 
-//    @XmlRootElement
-//    public static class Customers {
-//        @XmlElement(name = "Customer")
-//        public List<Customer> customers = Collections.emptyList();
-//    }
-//
-//    public static void writeCustomers(Collection<Customer> customers, Writer output) {
-//
-//        try {
-//            JAXBContext context = JAXBContext.newInstance(Customers.class);
-//            Marshaller m = context.createMarshaller();
-//            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-//            m.marshal(customers, output);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private final File xmlFile;
+    private Map<String,Pair<Customer,Integer>> customerIndex = new HashMap<String, Pair<Customer, Integer>>();
+    private int id = 0;
 
+    private final Object fileAccessLock = new Object();
+    private final Object inMemoryLock = new Object();
+    private final Object flushTaskLock = new Object();
+
+    private Future<Void> flushTask = null;
+    private boolean pendingFlushes = false;
+
+    public XmlStore(File xmlFile) {
+        this.xmlFile = xmlFile;
+    }
+
+    public void read() throws Exception {
+
+        CustomerList list;
+        synchronized (fileAccessLock) {
+            Serializer serializer = SerializerFactory.getSerializer();
+            try {
+                list = serializer.read(CustomerList.class, xmlFile);
+            } catch(Exception e) {
+                throw new RuntimeException(e); // TODO what now?
+            }
+        }
+
+        synchronized (inMemoryLock) {
+            customerIndex.clear();
+            id = 0;
+            for(Customer customer : list) {
+                customerIndex.put(customer.getName(), ImmutablePair.of(customer, id++));
+            }
+        }
+    }
+
+    public void shutdown() {
+        while(true) {
+            try {
+                flushTask.get();
+                return;
+            } catch (InterruptedException e) {
+                continue;
+            } catch (ExecutionException e) {
+                // TODO log error
+            }
+        }
+    }
+
+    private void flush() {
+        synchronized (flushTaskLock) {
+            if(flushTask == null) {
+                final CustomerList list;
+                synchronized (inMemoryLock) {
+                    List<Customer> customers = new ArrayList<Customer>();
+                    for(Pair<Customer,Integer> pair : customerIndex.values()) {
+                        customers.add(pair.getLeft());
+                    }
+                    Collections.sort(customers, new Comparator<Customer>() {
+                        public int compare(Customer customer, Customer customer2) {
+                            return customerIndex.get(customer.getName()).getRight()
+                                    .compareTo(customerIndex.get(customer2.getName()).getRight());
+                        }
+                    });
+                    list = new CustomerList(customers);
+                }
+                flushTask = new FutureTask<Void>(new Runnable() {
+                    public void run() {
+                        synchronized (fileAccessLock) {
+                            Serializer serializer = SerializerFactory.getSerializer();
+                            try {
+                                serializer.write(list, xmlFile);
+                            } catch (Exception e) {
+                                // do something TODO
+                            }
+                        }
+                        synchronized (flushTaskLock) {
+                            flushTask = null;
+                            if(pendingFlushes) {
+                                pendingFlushes = false;
+                                flush();
+                            }
+                        }
+                    }
+                }, null);
+            } else {
+                pendingFlushes = true;
+            }
+        }
+    }
+
+    public Customer findCustomerByName(String name) {
+        synchronized (inMemoryLock) {
+            Pair<Customer,Integer> pair = customerIndex.get(name);
+            return pair != null ? pair.getLeft() : null;
+        }
+    }
+
+    public Collection<Customer> findCustomersByText(String text) {
+        final List<Customer> result = new ArrayList<Customer>();
+        synchronized (inMemoryLock) {
+            for(Pair<Customer,Integer> pair : customerIndex.values()) {
+                Customer c = pair.getLeft();
+                if(c.matches(text)) {
+                    result.add(c);
+                }
+            }
+        }
+        return Collections.unmodifiableCollection(result);
+    }
+
+    public boolean removeCustomerByName(String name) {
+        boolean result;
+        synchronized (inMemoryLock) {
+             result = customerIndex.remove(name) != null;
+        }
+        flush();
+        return result;
+    }
+
+    public boolean removeCustomer(Customer customer) {
+        return removeCustomerByName(customer.getName());
+    }
+
+    public boolean updateCustomerByName(String name, Customer newCustomer) {
+        synchronized (inMemoryLock) {
+            Pair<Customer,Integer> existing = customerIndex.get(name);
+            if(existing == null) {
+                return false;
+            }
+
+            customerIndex.put(name, ImmutablePair.of(newCustomer, existing.getRight()));
+        }
+        flush();
+        return true;
+    }
+
+    public boolean updateCustomer(Customer customer, Customer newCustomer) {
+        return updateCustomerByName(customer.getName(), newCustomer);
+    }
+
+    public boolean addCustomer(Customer customer) {
+        synchronized (inMemoryLock) {
+            if(customerIndex.containsKey(customer.getName())) {
+                return false;
+            }
+            customerIndex.put(customer.getName(), ImmutablePair.of(customer, id++));
+        }
+        flush();
+        return true;
+    }
 }

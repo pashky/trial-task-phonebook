@@ -3,6 +3,7 @@ package xml.phonebook.model;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -32,5 +33,8 @@ public class EmailTest {
 
         Email e6 = e1.withEmail("new@mail.com");
         assertEquals(e1.getType(), e6.getType());
+
+        assertTrue(e1.matches("a@a"));
+        assertFalse(e1.matches("jjj"));
     }
 }

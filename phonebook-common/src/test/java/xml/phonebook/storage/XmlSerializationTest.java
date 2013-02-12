@@ -23,20 +23,12 @@ import static junit.framework.Assert.fail;
  * @author pashky
  */
 public class XmlSerializationTest {
-    Registry registry;
-    Strategy strategy;
     Serializer serializer;
     StringWriter sw;
 
     @Before
     public void setup() throws Exception {
-        registry = new Registry();
-        registry.bind(PhoneType.class, PhoneType.getConverter());
-        registry.bind(EmailType.class, EmailType.getConverter());
-        registry.bind(AddressType.class, AddressType.getConverter());
-        strategy = new RegistryStrategy(registry);
-
-        serializer = new Persister(strategy);
+        serializer = SerializerFactory.getSerializer();
         sw = new StringWriter();
     }
 
@@ -103,15 +95,15 @@ public class XmlSerializationTest {
 
         Customer c3 = new Customer("Homeless Man");
 
-        Customers cs1 = new Customers(Arrays.asList(c1, c2, c3));
+        CustomerList cs1 = new CustomerList(Arrays.asList(c1, c2, c3));
 
         StringWriter sw = new StringWriter();
         serializer.write(cs1, sw);
-        Customers cs2 = serializer.read(Customers.class, sw.toString());
-        assertEquals(cs2.numberOf(), 3);
+        CustomerList cs2 = serializer.read(CustomerList.class, sw.toString());
+        assertEquals(cs2.size(), 3);
 
-        for(int i = 0; i < cs1.numberOf(); ++i) {
-            assertEquals(cs1.getNth(i), cs2.getNth(i));
+        for(int i = 0; i < cs1.size(); ++i) {
+            assertEquals(cs1.get(i), cs2.get(i));
         }
 
     }

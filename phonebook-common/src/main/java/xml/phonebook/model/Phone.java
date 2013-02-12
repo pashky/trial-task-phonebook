@@ -10,7 +10,7 @@ import org.simpleframework.xml.Root;
  * @author pashky
  */
 @Root(name = "Phone")
-public class Phone {
+public class Phone implements Searchable {
     @Element(name = "Type")
     private final PhoneType type;
     @Element(name = "Value")
@@ -70,5 +70,9 @@ public class Phone {
                 "phone='" + phone + '\'' +
                 ", type=" + type +
                 '}';
+    }
+
+    public boolean matches(String text) {
+        return getNormalizedPhone().contains(normalize(text));
     }
 }

@@ -28,7 +28,7 @@ import java.util.List;
  * @author pashky
  */
 @Root(name = "Address")
-public final class Address {
+public final class Address implements Searchable {
     /**
      * Address type
      */
@@ -144,5 +144,11 @@ public final class Address {
                 ", streetLines=" + StringUtils.join(streetLines, "\\n") +
                 ", town='" + town + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean matches(String text) {
+        text = text.toLowerCase();
+        return getPostalCode().matches(text) || getTown().matches(text) || getStreetAddress().matches(text);
     }
 }

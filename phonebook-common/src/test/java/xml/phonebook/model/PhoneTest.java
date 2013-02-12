@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Created 12/02/2013 01:32
@@ -41,6 +42,10 @@ public class PhoneTest {
         
         Phone p7 = p1.withPhone("0078922233");
         assertEquals(p1.getType(), p7.getType());
+
+        assertTrue(p1.matches("234"));
+        assertTrue(p1.matches("(234)"));
+        assertFalse(p1.matches("08880"));
     }
     
 }

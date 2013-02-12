@@ -33,7 +33,7 @@ abstract class AbstractType {
             return registry.get(name);
         }
 
-        public Type findOrCreateByName(String name) {
+        public synchronized Type findOrCreateByName(String name) {
             Type result = findByName(name);
             if(result == null) {
                 result = constructor.create(name);

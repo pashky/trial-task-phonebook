@@ -8,9 +8,7 @@ import xml.phonebook.model.CustomerList;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 
 /**
  * Created 12/02/2013 02:23
@@ -23,12 +21,15 @@ public class XmlStore {
     private Map<String,Pair<Customer,Integer>> customerIndex = new HashMap<String, Pair<Customer, Integer>>();
     private int id = 0;
 
+    private boolean isShutDown = false;
+
     private final Object fileAccessLock = new Object();
     private final Object inMemoryLock = new Object();
     private final Object flushTaskLock = new Object();
 
     private Future<Void> flushTask = null;
     private boolean pendingFlushes = false;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     public XmlStore(File xmlFile) {
         this.xmlFile = xmlFile;
@@ -58,10 +59,17 @@ public class XmlStore {
     public void shutdown() {
         while(true) {
             try {
-                flushTask.get();
-                return;
+                final Future<Void> toWait;
+                synchronized (flushTaskLock) {
+                    if(flushTask == null) {
+                        isShutDown = true;
+                        return;
+                    }
+                    toWait = flushTask;
+                }
+                toWait.get();
             } catch (InterruptedException e) {
-                continue;
+                // just go on
             } catch (ExecutionException e) {
                 // TODO log error
             }
@@ -70,6 +78,9 @@ public class XmlStore {
 
     private void flush() {
         synchronized (flushTaskLock) {
+            if(isShutDown) {
+                throw new IllegalStateException("Store has been shut down already, no writes are possible");
+            }
             if(flushTask == null) {
                 final CustomerList list;
                 synchronized (inMemoryLock) {
@@ -85,7 +96,7 @@ public class XmlStore {
                     });
                     list = new CustomerList(customers);
                 }
-                flushTask = new FutureTask<Void>(new Runnable() {
+                flushTask = executorService.submit(new Runnable() {
                     public void run() {
                         synchronized (fileAccessLock) {
                             Serializer serializer = SerializerFactory.getSerializer();
@@ -129,6 +140,18 @@ public class XmlStore {
         }
         return Collections.unmodifiableCollection(result);
     }
+
+    public Collection<Customer> findAllCustomers() {
+        final List<Customer> result = new ArrayList<Customer>();
+        synchronized (inMemoryLock) {
+            for(Pair<Customer,Integer> pair : customerIndex.values()) {
+                Customer c = pair.getLeft();
+                result.add(c);
+            }
+        }
+        return Collections.unmodifiableCollection(result);
+    }
+
 
     public boolean removeCustomerByName(String name) {
         boolean result;

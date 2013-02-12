@@ -5,6 +5,7 @@ import org.simpleframework.xml.convert.Registry;
 import org.simpleframework.xml.convert.RegistryStrategy;
 import org.simpleframework.xml.core.Persister;
 import org.simpleframework.xml.strategy.Strategy;
+import org.simpleframework.xml.stream.Format;
 import xml.phonebook.model.AddressType;
 import xml.phonebook.model.EmailType;
 import xml.phonebook.model.PhoneType;
@@ -28,7 +29,9 @@ public class SerializerFactory {
 
     private static Strategy strategy = new RegistryStrategy(registry);
 
+    private static Format format = new Format(2, "<?xml version='1.0' encoding='utf-8'?>");
+
     public static Serializer getSerializer() {
-        return new Persister(strategy);
+        return new Persister(strategy, format);
     }
 }

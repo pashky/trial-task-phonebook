@@ -30,6 +30,15 @@ public final class Email {
         return type;
     }
 
+    public Email withType(EmailType newType) {
+        return new Email(newType, getEmail());
+    }
+
+    public Email withEmail(String newEmail) {
+        return new Email(getType(), newEmail);
+    }
+
+    
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

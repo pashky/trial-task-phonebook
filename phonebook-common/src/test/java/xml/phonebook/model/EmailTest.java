@@ -26,5 +26,11 @@ public class EmailTest {
 
         Email e4 = new Email(EmailType.WORK_EMAIL, "b@bb.bb");
         assertFalse(e1.equals(e4));
+
+        Email e5 = e1.withType(EmailType.WORK_EMAIL);
+        assertEquals(e1.getEmail(), e5.getEmail());
+
+        Email e6 = e1.withEmail("new@mail.com");
+        assertEquals(e1.getType(), e6.getType());
     }
 }

@@ -13,6 +13,8 @@ import java.util.List;
 /**
  * Created 11/02/2013 23:18
  *
+ * Address class to represent this data structure:
+ *
  * <Address>
  *      <Type>VISITING_ADDRESS</Type>
  *      <Street>Customer Street 8 B 9</Street>
@@ -21,66 +23,94 @@ import java.util.List;
  *      <Town>Customerville</Town>
  * </Address>
  *
+ * Immutable.
+ *
  * @author pashky
  */
 @Root(name = "Address")
-public class Address {
+public final class Address {
+    /**
+     * Address type
+     */
     @Element(name = "Type")
     private final AddressType type;
 
+    /**
+     * Array of street address lines
+     */
     @ElementList(inline = true, entry = "Street", required = false)
-    private List<String> streetLines = Collections.emptyList();
+    private List<String> streetLines;
 
+    /**
+     * Postal code
+     */
     @Element(name = "PostalCode", required = false)
-    private String postalCode;
+    private final String postalCode;
 
     @Element(name = "Town", required = false)
-    private String town;
+    private final String town;
 
-    public Address(@Element(name = "Type") AddressType type) {
+    /**
+     * This constructor only exists to serve XML serializer
+     * @param type
+     * @param town
+     * @param postalCode
+     */
+    private Address(@Element(name = "Type") AddressType type,
+                    @Element(name = "Town", required = false) String town,
+                    @Element(name = "PostalCode", required = false) String postalCode
+    ) {
+        this.type = type;
+        this.town = town;
+        this.postalCode = postalCode;
+        this.streetLines = Collections.emptyList();
+    }
+
+    public Address(AddressType type, String town, String postalCode, Collection<String> streetLines
+    ) {
         if(type == null)
             throw new NullPointerException("Type can't be null");
         this.type = type;
+        this.town = town;
+        this.postalCode = postalCode;
+        this.streetLines = streetLines == null ? Collections.<String>emptyList()
+                : new ArrayList<String>(streetLines);
     }
 
     public String getPostalCode() {
         return postalCode;
     }
 
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
     public List<String> getStreetLines() {
         return Collections.unmodifiableList(streetLines);
-    }
-
-    public void addStreetLines(Collection<String> streetLines) {
-        if(this.streetLines.isEmpty())
-            this.streetLines = new ArrayList<String>(streetLines);
-        else
-            this.streetLines.addAll(streetLines);
-    }
-
-    public void setStreetLines(Collection<String> streetLines) {
-        this.streetLines = new ArrayList<String>(streetLines);
     }
 
     public String getStreetAddress() {
         return StringUtils.join(streetLines, "\n");
     }
 
-
     public String getTown() {
         return town;
     }
 
-    public void setTown(String town) {
-        this.town = town;
-    }
-
     public AddressType getType() {
         return type;
+    }
+
+    public Address withType(AddressType newType) {
+        return new Address(newType, getTown(), getPostalCode(), getStreetLines());
+    }
+
+    public Address withTown(String newTown) {
+        return new Address(getType(), newTown, getPostalCode(), getStreetLines());
+    }
+
+    public Address withPostalCode(String newPostalCode) {
+        return new Address(getType(), getTown(), newPostalCode, getStreetLines());
+    }
+
+    public Address withStreetLines(Collection<String> newStreetLines) {
+        return new Address(getType(), getTown(), getPostalCode(), newStreetLines);
     }
 
     public boolean equals(Object o) {

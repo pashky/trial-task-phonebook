@@ -36,6 +36,11 @@ public class PhoneTest {
         Phone p5 = new Phone(PhoneType.WORK_PHONE, "+1 (234) 56-78-92");
         assertEquals(p1, p5);
 
+        Phone p6 = p1.withType(PhoneType.WORK_PHONE);
+        assertEquals(p1.getPhone(), p6.getPhone());
+        
+        Phone p7 = p1.withPhone("0078922233");
+        assertEquals(p1.getType(), p7.getType());
     }
     
 }

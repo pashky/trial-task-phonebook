@@ -39,6 +39,14 @@ public class Phone {
         return type;
     }
 
+    public Phone withType(PhoneType newType) {
+        return new Phone(newType, getPhone());
+    }
+
+    public Phone withPhone(String newPhone) {
+        return new Phone(getType(), newPhone);
+    }
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -53,7 +61,7 @@ public class Phone {
 
     public int hashCode() {
         int result = type.hashCode();
-        result = 31 * result + phone.hashCode();
+        result = 31 * result + getNormalizedPhone().hashCode();
         return result;
     }
 

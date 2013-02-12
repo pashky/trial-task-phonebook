@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
+import xml.phonebook.collections.OrderedSet;
 
 import java.util.*;
 
@@ -13,27 +14,42 @@ import java.util.*;
  * @author pashky
  */
 @Root(name = "Customer")
-public class Customer {
+public final class Customer {
     @Element(name = "Name")
-    private String name;
+    private final String name;
 
     @Element(name = "Notes", required = false)
-    private String notes;
+    private final String notes;
 
-    public Customer(@Element(name = "Name") String name) {
+    public Customer(String name) {
+        this(name, null);
+    }
+
+    public Customer(@Element(name = "Name") String name,
+                    @Element(name = "Notes") String notes) {
         if(name == null)
             throw new NullPointerException("Name can't be null");
         this.name = name;
+        this.notes = notes;
     }
 
-    @ElementList(inline = true, required = false)
-    private List<Address> addresses = new ArrayList<Address>();
+    Customer(String name, String notes,
+                     OrderedSet<Address> addresses, OrderedSet<Phone> phones, OrderedSet<Email> emails) {
+        this.name = name;
+        this.notes = notes;
+        this.addresses = addresses;
+        this.phones = phones;
+        this.emails = emails;
+    }
 
-    @ElementList(inline = true, required = false)
-    private List<Email> emails = new ArrayList<Email>();
+    @ElementList(inline = true, required = false, entry = "Address", type = Address.class)
+    private OrderedSet<Address> addresses = new OrderedSet<Address>();
 
-    @ElementList(inline = true, required = false)
-    private List<Phone> phones = new ArrayList<Phone>();
+    @ElementList(inline = true, required = false, entry = "Email", type = Email.class)
+    private OrderedSet<Email> emails = new OrderedSet<Email>();
+
+    @ElementList(inline = true, required = false, entry = "Phone", type = Phone.class)
+    private OrderedSet<Phone> phones = new OrderedSet<Phone>();
 
     public Collection<Address> getAddresses() {
         return Collections.unmodifiableCollection(addresses);
@@ -43,83 +59,53 @@ public class Customer {
         return Collections.unmodifiableCollection(emails);
     }
 
-    public String getName() {
-        return name;
+    public Collection<Phone> getPhones() {
+        return Collections.unmodifiableCollection(phones);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getName() {
+        return name;
     }
 
     public String getNotes() {
         return notes;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public Customer withAddress(Address address) {
+        return new Customer(name, notes, addresses.withAdded(address), phones, emails);
     }
 
-    public Collection<Phone> getPhones() {
-        return Collections.unmodifiableCollection(phones);
+    public Customer withoutAddress(Address address) {
+        return new Customer(name, notes, addresses.withRemoved(address), phones, emails);
     }
 
-    public static <T> void retain(List<T> list, T object) {
-        int i = list.indexOf(object);
-        if(i < 0) {
-            list.add(object);
-        } else {
-            list.set(i, object);
-        }
+    public Customer replaceAddress(Address old, Address address) {
+        return new Customer(name, notes, addresses.withReplaced(old, address), phones, emails);
     }
 
-    public static <T> void update(List<T> list, Collection<T> newList) {
-        Set<T> toRemove = new HashSet<T>(list);
-        for(T item : newList) {
-            toRemove.remove(item);
-            retain(list, item);
-        }
-
-        for(T item : toRemove) {
-            list.remove(item);
-        }
+    public Customer withPhone(Phone phone) {
+        return new Customer(name, notes, addresses, phones.withAdded(phone), emails);
     }
 
-    public void retainAddress(Address address) {
-        retain(addresses, address);
+    public Customer withoutPhone(Phone phone) {
+        return new Customer(name, notes, addresses, phones.withRemoved(phone), emails);
     }
 
-    public void removeAddress(Address address) {
-        addresses.remove(address);
+    public Customer replacePhone(Phone old, Phone phone) {
+        return new Customer(name, notes, addresses, phones.withReplaced(old, phone), emails);
     }
 
-    public void updateAddresses(Collection<Address> newAddresses) {
-        update(addresses, newAddresses);
+    public Customer withEmail(Email email) {
+        return new Customer(name, notes, addresses, phones, emails.withAdded(email));
     }
 
-    public void retainPhone(Phone phone) {
-        retain(phones, phone);
+    public Customer withoutEmail(Email email) {
+        return new Customer(name, notes, addresses, phones, emails.withRemoved(email));
     }
 
-    public void removePhone(Phone phone) {
-        phones.remove(phone);
+    public Customer replaceEmail(Email old, Email email) {
+        return new Customer(name, notes, addresses, phones, emails.withReplaced(old, email));
     }
-
-    public void updatePhones(Collection<Phone> newPhones) {
-        update(phones, newPhones);
-    }
-
-    public void retainEmail(Email email) {
-        retain(emails, email);
-    }
-
-    public void removeEmail(Email email) {
-        emails.remove(email);
-    }
-
-    public void updateEmails(Collection<Email> newEmails) {
-        update(emails, newEmails);
-    }
-
 
     public static <T> boolean setEquals(Collection<T> c1, Collection<T> c2) {
         return new HashSet<T>(c1).equals(new HashSet<T>(c2));

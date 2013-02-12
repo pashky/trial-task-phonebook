@@ -1,4 +1,4 @@
-package xml.phonebook.parser;
+package xml.phonebook.storage;
 
 /**
  * Created 12/02/2013 02:43

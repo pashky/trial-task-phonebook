@@ -1,0 +1,89 @@
+<div class="row">
+    <form class="form-horizontal span12">
+        <fieldset>
+            <legend>Customer Details</legend>
+            <br/>
+            <div class="row">
+                <div class="span9">
+
+                    <div class="control-group">
+                        <label for="name" class="control-label">Name:</label>
+                        <div class="controls">
+                            <input type="text" name="name" value="<%- name %>"/>
+                            <span class="help-inline"></span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="description" class="control-label">Notes:</label>
+
+                        <div class="controls">
+                            <textarea id="description" name="notes" class="span6" rows="6"><%- notes %></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <legend>Address</legend>
+            <br/>
+            <div class="row">
+                <div class="span9">
+                    <div class="addressesList"></div>
+                    <div class="control-group">
+                        <label for="description" class="control-label"></label>
+                        <div class="controls">
+                            <button class="btn btn-success addAddress"><i class="icon-map-marker icon-white" /> Add address</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <legend>Phone</legend>
+            <br/>
+            <div class="row">
+                <div class="span9">
+                    <div class="control-group cust-subsection">
+                        <div class="controls">
+                            <div class="phonesList"></div>
+                            <div class="cust-phone-sep" />
+                            <p><button class="btn btn-success addPhone"><i class="icon-plus icon-white" /> Add phone</button></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <legend>Email</legend>
+            <br/>
+            <div class="row">
+                <div class="span9">
+                    <div class="control-group cust-subsection">
+                        <div class="controls">
+                            <div class="emailsList"></div>
+                            <div class="cust-phone-sep" />
+                            <p><button class="btn btn-success addEmail"><i class="icon-envelope icon-white" /> Add email</button></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <a href="#" class="btn btn-primary saveCustomer">Save</a>
+            <a href="#" class="btn btn-inverse deleteCustomer">Delete</a>
+        </div>
+
+    </form>
+
+</div>
+
+<div class="row status-bar">
+    <div class="span12">
+        <div class="alert alert-success" style="display: none">
+            <b>Success!</b> Customer saved successfully
+        </div>
+    </div>
+</div>
+
+

@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>phonebook-common</module>
+        <module>phonebook-server</module>
     </modules>
 
 

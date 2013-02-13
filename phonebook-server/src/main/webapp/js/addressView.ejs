@@ -1,0 +1,41 @@
+<div class="control-group">
+    <label for="name" class="control-label">Type:</label>
+
+    <div class="controls">
+        <select name="type">
+            <% for(var k in availableTypes) { %>
+            <option <%= availableTypes[k].value == type ? 'selected' : '' %> value="<%- availableTypes[k].value %>"><%- availableTypes[k].description %></option>
+            <% } %>
+        </select>
+        &nbsp;
+        <button class="btn btn-danger removeAddress"><i class="icon-remove icon-white"></i></button>
+        <span class="help-inline"></span>
+    </div>
+</div>
+
+<div class="control-group">
+    <label for="description" class="control-label">Town:</label>
+    <div class="controls">
+        <input type="text" id="name" name="town" value="<%= town %>"/>
+    </div>
+</div>
+
+<div class="control-group">
+    <label for="description" class="control-label">Post code:</label>
+    <div class="controls">
+        <input type="text" id="name" name="postalCode" value="<%= postalCode %>"/>
+    </div>
+</div>
+
+<div class="control-group">
+    <label for="description" class="control-label">Street:</label>
+
+    <div class="controls">
+        <% for(var i = 0; i < street.length; ++i) { %>
+        <input type="text" id="name" name="street.<%=i%>" value="<%- street[i] %>"/>
+        <a href="#" class="removeStreet"><i class="icon-minus-sign" data-num="<%- i %>"></i></a>
+        <% if(i == street.length - 1) { %><a href="#" class="addStreet"><i class="icon-plus-sign"></i></a><% } %>
+        <br />
+        <% } %>
+    </div>
+</div>

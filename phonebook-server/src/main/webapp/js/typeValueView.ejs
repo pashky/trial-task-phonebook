@@ -1,0 +1,15 @@
+<div class="input-prepend cust-next-phone input-append">
+    <div class="btn-group">
+        <button class="btn dropdown-toggle" data-toggle="dropdown"><span class="valueType"><%- typeDescription %></span>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <% _.each(availTypes, function(type) { %>
+            <li><a href="<%- type.value %>"><%- type.description %></a></li>                                        
+            <% }) %>
+        </ul>
+    </div>
+    <input class="span2 valueInput" type="text" value="<%- value %>">
+    <button class="btn btn-danger removeValue"><i class="icon-remove icon-white" /></button>                                
+</div>
+<div class="cust-phone-sep"></div>

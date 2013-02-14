@@ -164,6 +164,8 @@ addressView = Backbone.View.extend({
 });
 
 customerModel = Backbone.DeepModel.extend({
+
+    localStorage: new Backbone.LocalStorage("customer"),
     
     initialize: function() {
 	this.childCollection('addresses', addressModel);
@@ -174,20 +176,20 @@ customerModel = Backbone.DeepModel.extend({
     childCollection: function(fieldName, modelType) {
 	var collection = this[fieldName + 'Collection'] = new Backbone.Collection([], {model: modelType});
 	var listenerFrom = this[fieldName + 'CollectionUpdated'] = function() {
-	    console.log("updated from " + fieldName);
+	    this.off('change:' + fieldName, listenerTo);
 	    this.set(fieldName, _.map(collection.models, function(m) {
 		return m.toJSON();
 	    }));
+	    this.on('change:' + fieldName, listenerTo);
 	};
 	var listenerTo = this[fieldName + 'ModelUpdated'] = function() {
-	    console.log("updated to");
 	    collection.reset(this.get(fieldName));
 	}
 	
 	this.listenTo(collection, "add", listenerFrom);
 	this.listenTo(collection, "remove", listenerFrom);
 	this.listenTo(collection, "change", listenerFrom);
-	this.on('changed:' + fieldName, listenerTo);
+	this.on('change:' + fieldName, listenerTo);
 	
 	return collection;
     }
@@ -242,11 +244,38 @@ customerView = Backbone.View.extend({
     },
     
     saveCustomer: function(e) {
-	e.preventDefault();
+	var self = this;
+	
+        var check = { isValid: true };//this.model.validateAll();
+        if (check.isValid === false) {
+            utils.displayValidationErrors(check.messages);
+            return false;
+        }
+	
+        this.model.save(null, {
+            success: function (model) {
+                self.render();
+                app.navigate('edit/' + model.id, false);
+                utils.showAlert('Success!', 'Customer saved successfully', 'alert-success');
+            },
+            error: function () {
+                utils.showAlert('Error', 'An error occurred while trying to delete this item', 'alert-error');
+            }
+        });
+	
+	return false;
     },
     
     deleteCustomer: function(e) {
-	e.preventDefault();
+	if(confirm('Are you sure you want to delete customer?')) {
+	    this.model.destroy({
+		success: function () {
+                    alert('Customer was deleted successfully');
+                    window.history.back();
+		}
+            });
+	}
+	return false;
     },
     
     changeValue: function(event) {
@@ -254,9 +283,9 @@ customerView = Backbone.View.extend({
     },
 	
     render: function() {
-	var i;
-	
         $(this.el).html(this.template({name: this.model.get('name'), notes: this.model.get('notes')}));
+	
+	this.model.get('id') ? $('.deleteCustomer', this.el).show() : $('.deleteCustomer', this.el).hide();
 
 	var self = this;
 	_.each(this.childRenders, function(f) { f.call(self); });
@@ -266,13 +295,13 @@ customerView = Backbone.View.extend({
     
 });
 
-var AppRouter = Backbone.Router.extend({
+var appRouter = Backbone.Router.extend({
 
     routes: {
         ""                  : "list",
-        "customers/page/:page"	: "list",
-        "customers/add"         : "addCustomer",
-        "customers/edit/:id"    : "editCustomer"
+        "page/:page"	: "list",
+        "add"         : "addCustomer",
+        "edit/:id"    : "editCustomer"
     },
 
     initialize: function () {
@@ -282,13 +311,7 @@ var AppRouter = Backbone.Router.extend({
 
     list: function(page) {
 
-	var cust = new customerModel({});//name: "vasya", notes: "dgfjdhsgfjdsg fj", addresses: [], phones: [], emails: []});
-
-	cust.on('change', function() {
-	    console.log(JSON.stringify(cust.toJSON()));
-	});
-	
-	$('#content').append(new customerView({model: cust}).$el);
+	$('#content').empty();
 	
         // var p = page ? parseInt(page, 10) : 1;
         // var customerList = new CustomerCollection();
@@ -298,24 +321,26 @@ var AppRouter = Backbone.Router.extend({
         this.headerView.selectMenuItem('home-menu');
     },
 
-    // customerDetails: function (id) {
-    //     var customer = new Customer({id: id});
-    //     customer.fetch({success: function(){
-    //         $("#content").html(new CustomerView({model: customer}).el);
-    //     }});
-    //     this.headerView.selectMenuItem();
-    // },
+    editCustomer: function (id) {
+	var customer = new customerModel({id: id});
+        customer.fetch({success: function(){
+	    console.dir(customer);
+	    $('#content').empty().append(new customerView({model: customer}).$el);
+        }});
+	
+        this.headerView.selectMenuItem();
+    },
 
-    // addCustomer: function() {
-    //     var customer = new Customer();
-    //     $('#content').html(new CustomerView({model: customer}).el);
-    //     this.headerView.selectMenuItem('add-menu');
-    // }
+    addCustomer: function() {
+	var customer = new customerModel({});
+	$('#content').empty().append(new customerView({model: customer}).$el);
+	
+        this.headerView.selectMenuItem('add-menu');
+    }
 
 });
 
-//_.chain(window).keys().filter(function(v) { return /View$/.test(v); }).value()
 utils.loadTemplate(['typeValueView','headerView','addressView','customerView'], function() {
-    app = new AppRouter();
+    app = new appRouter();
     Backbone.history.start();
 });

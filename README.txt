@@ -94,7 +94,12 @@ external file locking.
 server process is killed unexpectedly, it may loose some very last
 changes.
 
-## Simplifications and limitations
+7. Code is split into two modules phonebook-common - a library to work
+with XML and model and phonebook-server - Javascript application
+packaged with embedded Jetty webserver and tiny RESTful API proxy
+layer serializing data to JSON and back. 
+
+## Known simplifications and limitations
 
 1. No paging or limiting support for customers list. It will try to
 show everything in database.

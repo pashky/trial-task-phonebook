@@ -1,6 +1,5 @@
 package xml.phonebook.storage;
 
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.map.IdentityMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -10,11 +9,15 @@ import xml.phonebook.model.CustomerList;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
- * Created 12/02/2013 02:23
+ * XML-backed customer database storage
  *
  * @author pashky
  */
@@ -34,10 +37,28 @@ public class XmlStore {
     private boolean pendingFlushes = false;
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
+    /**
+     * Interface for XML write error listeners, as XML flushes are asynchronous
+     */
+    public interface WriteErrorListener {
+        void xmlWriteError(Throwable e);
+    }
+
+    private WeakReference<WriteErrorListener> writeErrorListener = null;
+    private final Object listenerLock = new Object();
+
+    /**
+     * Create store instance
+     * @param xmlFile file to read and write to
+     */
     public XmlStore(File xmlFile) {
         this.xmlFile = xmlFile;
     }
 
+    /**
+     * Attempt to read xml file
+     * @throws IOException when read or parse error occurs
+     */
     public void read() throws IOException {
 
         CustomerList list;
@@ -67,6 +88,9 @@ public class XmlStore {
         return String.valueOf(id);
     }
 
+    /**
+     * Wait for any pending writes to finish and shut down storage. MUST be called before app stop.
+     */
     public void shutdown() {
         while(true) {
             try {
@@ -82,7 +106,7 @@ public class XmlStore {
             } catch (InterruptedException e) {
                 // just go on
             } catch (ExecutionException e) {
-                // TODO log error
+                // shouldn't happen
             }
         }
     }
@@ -116,7 +140,15 @@ public class XmlStore {
                             try {
                                 serializer.write(list, xmlFile);
                             } catch (Exception e) {
-                                // do something TODO
+                                WriteErrorListener ref = null;
+                                synchronized (listenerLock) {
+                                    if(writeErrorListener != null) {
+                                        ref = writeErrorListener.get();
+                                    }
+                                }
+                                if(ref != null) {
+                                    ref.xmlWriteError(e);
+                                }
                             }
                         }
                         synchronized (flushTaskLock) {
@@ -134,6 +166,11 @@ public class XmlStore {
         }
     }
 
+    /**
+     * Find customer by id
+     * @param id id to search
+     * @return stored customer structure or null if not found
+     */
     public StoredCustomer findCustomerById(String id) {
         synchronized (inMemoryLock) {
             Pair<Customer,Integer> pair = customerIndex.get(id);
@@ -141,10 +178,23 @@ public class XmlStore {
         }
     }
 
+    /**
+     * Predicate to filter out customers
+     */
     public interface Predicate {
+        /**
+         * Test for compliance
+         * @param c customer
+         * @return true if should match customer
+         */
         boolean test(Customer c);
     }
 
+    /**
+     * Filters customers by applying predicate for each of them, only those returning true make it to result.
+     * @param filter filter predicate
+     * @return collection of matching stored customers, read-only
+     */
     public Collection<StoredCustomer> findCustomers(Predicate filter) {
         final List<StoredCustomer> result = new ArrayList<StoredCustomer>();
         synchronized (inMemoryLock) {
@@ -165,6 +215,11 @@ public class XmlStore {
         return Collections.unmodifiableCollection(result);
     }
 
+    /**
+     * Find customers by searching them for text substring. Case-insensitive.
+     * @param text text to search
+     * @return found customers, read-only
+     */
     public Collection<StoredCustomer> findCustomersByText(final String text) {
         return findCustomers(new Predicate() {
             public boolean test(Customer c) {
@@ -173,9 +228,19 @@ public class XmlStore {
         });
     }
 
+    /**
+     * Return all customers in DB
+     * @return collection of customers, read-only
+     */
     public Collection<StoredCustomer> findAllCustomers() {
         return findCustomers(null);
     }
+
+    /**
+     * Delete customer by id
+     * @param id id
+     * @return true if deleted
+     */
     public boolean deleteCustomerById(String id) {
         boolean result;
         synchronized (inMemoryLock) {
@@ -185,6 +250,12 @@ public class XmlStore {
         return result;
     }
 
+    /**
+     * Update customer with new data by id
+     * @param id id to update
+     * @param newCustomer new customer structure
+     * @return true if found and updated
+     */
     public boolean updateCustomerById(String id, Customer newCustomer) {
         synchronized (inMemoryLock) {
             Pair<Customer,Integer> existing = customerIndex.get(id);
@@ -198,6 +269,11 @@ public class XmlStore {
         return true;
     }
 
+    /**
+     * Add new customer
+     * @param customer customer to store
+     * @return stored version of customer with assigned id
+     */
     public StoredCustomer addCustomer(Customer customer) {
         String id;
         synchronized (inMemoryLock) {
@@ -205,5 +281,26 @@ public class XmlStore {
         }
         flush();
         return new StoredCustomer(id, customer);
+    }
+
+    /**
+     *
+     * @return write error listener if exists or null
+     */
+    public WriteErrorListener getWriteErrorListener() {
+        synchronized (listenerLock) {
+            return writeErrorListener != null ? writeErrorListener.get() : null;
+        }
+    }
+
+    /**
+     * Sets new listener using weak reference
+     * @param writeErrorListener new listener
+     */
+    public void setWriteErrorListener(WriteErrorListener writeErrorListener) {
+        synchronized (listenerLock) {
+            this.writeErrorListener = writeErrorListener != null ?
+                    new WeakReference<WriteErrorListener>(writeErrorListener) : null;
+        }
     }
 }

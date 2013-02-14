@@ -4,7 +4,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 /**
- * Created 11/02/2013 23:19
+ * Email object. Immutable.
  *
  * @author pashky
  */
@@ -15,6 +15,11 @@ public final class Email implements Searchable {
     @Element(name = "Value")
     private final String email;
 
+    /**
+     * Create instance
+     * @param type type
+     * @param email email text
+     */
     public Email(@Element(name = "Type") EmailType type, @Element(name = "Value") String email) {
         if(email == null || type == null)
             throw new NullPointerException("Email and type can't be null");
@@ -22,18 +27,36 @@ public final class Email implements Searchable {
         this.email = email;
     }
 
+    /**
+     *
+     * @return email text
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     *
+     * @return email type
+     */
     public EmailType getType() {
         return type;
     }
 
+    /**
+     * Make a copy with type changed to
+     * @param newType new type
+     * @return created email
+     */
     public Email withType(EmailType newType) {
         return new Email(newType, getEmail());
     }
 
+    /**
+     * Make a copy with email changed to
+     * @param newEmail new email
+     * @return created email
+     */
     public Email withEmail(String newEmail) {
         return new Email(getType(), newEmail);
     }

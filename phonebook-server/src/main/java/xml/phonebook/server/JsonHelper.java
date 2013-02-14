@@ -11,11 +11,14 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 
 /**
- * Created 14/02/2013 07:02
+ * Utility class for customers JSON (de)serialization
  *
  * @author pashky
  */
 public class JsonHelper {
+    /**
+     * For GSON library
+     */
     private static class TypeJson implements JsonDeserializer<AbstractType>, JsonSerializer<AbstractType> {
         public static TypeJson instance = new TypeJson();
         public AbstractType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext j) throws JsonParseException {
@@ -34,6 +37,9 @@ public class JsonHelper {
         }
     }
 
+    /**
+     * For GSON library
+     */
     private static class StoredCustomerJson implements JsonSerializer<StoredCustomer>,JsonDeserializer<StoredCustomer> {
         public static StoredCustomerJson instance = new StoredCustomerJson();
 
@@ -50,10 +56,17 @@ public class JsonHelper {
         }
     }
 
+    /**
+     * Thread-safe singleton
+     */
     private static class Holder {
         private static final JsonHelper instance = new JsonHelper();
     }
 
+    /**
+     * Returns singleton helper instance
+     * @return helper
+     */
     public static JsonHelper instance() {
         return Holder.instance;
     }
@@ -69,22 +82,45 @@ public class JsonHelper {
         gson = gsonb.create();
     }
 
+    /**
+     * Convert from json string to customer object
+     * @param json string
+     * @return object
+     */
     public Customer fromJson(String json) {
         return gson.fromJson(json, Customer.class);
     }
 
+    /**
+     * Convert either customer, stored customer or collection of such to json
+     * @param customer something to serialize
+     * @return JSON string
+     */
     public String toJson(Object customer) {
         return gson.toJson(customer);
     }
 
+    /**
+     * Read customer object from reader
+     * @param json reader
+     * @return customer object
+     */
     public Customer fromJson(Reader json) {
         return gson.fromJson(json, Customer.class);
     }
 
+    /**
+     * Write customer, stored collection or collection
+     * @param customer something to serialize
+     * @param json writer
+     */
     public void toJson(Object customer, Writer json) {
         gson.toJson(customer, json);
     }
 
+    /**
+     * Container class for JSON error result
+     */
     private static class Error {
         private final String error;
 
@@ -93,6 +129,11 @@ public class JsonHelper {
         }
     }
 
+    /**
+     * Write JSON-encoded error message to writer
+     * @param error error text
+     * @param json writer
+     */
     public void errorJson(String error, Writer json) {
         gson.toJson(new Error(error), json);
     }

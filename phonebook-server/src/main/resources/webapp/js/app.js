@@ -1,3 +1,6 @@
+//
+// Customers application. Based on backbone.js and bootstrap
+//
 var AVAIL_PHONE_TYPES = [
     { value: 'WORK_PHONE', description: 'Work' },
     { value: 'HOME_PHONE', description: 'Home' },
@@ -46,8 +49,7 @@ searchView = Backbone.View.extend({
     
     search: function() {
         var encoded = encodeURIComponent($('input', this.el).val());
-        this.collection.url = '/customers?search=' + encoded;
-//        app.navigate("#search/" + encoded, false);
+        this.collection.url = $.trim(encoded).length ? '/customers?search=' + encoded : '/customers';
         var self = this;
         this.collection.fetch({success: function() {
             self.collection.url = '/customers';

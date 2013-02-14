@@ -10,7 +10,7 @@ import xml.phonebook.collections.OrderedSet;
 import java.util.*;
 
 /**
- * Created 11/02/2013 23:13
+ * Customer class. Immutable. All changes are only through copy-and-modify methods.
  *
  * @author pashky
  */

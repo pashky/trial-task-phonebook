@@ -1,3 +1,6 @@
+//
+// Utility functions
+//
 window.util = {
 
     loadTemplate: function(views, callback) {

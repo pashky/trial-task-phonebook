@@ -5,7 +5,7 @@ import org.simpleframework.xml.Root;
 
 
 /**
- * Created 11/02/2013 23:19
+ * Phone class. Immutable.
  *
  * @author pashky
  */
@@ -16,10 +16,21 @@ public class Phone implements Searchable {
     @Element(name = "Value")
     private final String phone;
 
+    /**
+     * Normalize phone - i.e. remove all meaningless symbols like (,),-,etc.
+     * This form is used for equality tests, so "+1 (234) 55-66-77" and "+1234556677" phones are considered equal.
+     * @param phone phone
+     * @return normalized form
+     */
     private static String normalize(String phone) {
         return phone.toLowerCase().replaceAll("[^0-9pw*#+]", "");
     }
 
+    /**
+     * Constructor
+     * @param type phone type
+     * @param phone phone string
+     */
     public Phone(@Element(name = "Type") PhoneType type, @Element(name = "Value") String phone) {
         if(phone == null || type == null)
             throw new NullPointerException("Phone and type can't be null");
@@ -27,26 +38,53 @@ public class Phone implements Searchable {
         this.phone = phone;
     }
 
+    /**
+     *
+     * @return phone string
+     */
     public String getPhone() {
         return phone;
     }
 
+    /**
+     *
+     * @return normalized phone string
+     */
     public String getNormalizedPhone() {
         return normalize(phone);
     }
 
+    /**
+     *
+     * @return phone type
+     */
     public PhoneType getType() {
         return type;
     }
 
+    /**
+     * Returns a copy with new type
+     * @param newType new type
+     * @return copy of phone
+     */
     public Phone withType(PhoneType newType) {
         return new Phone(newType, getPhone());
     }
 
+    /**
+     * Returns a copy with new phone
+     * @param newPhone new phone
+     * @return copy of phone
+     */
     public Phone withPhone(String newPhone) {
         return new Phone(getType(), newPhone);
     }
 
+    /**
+     * Normalized form is used for equality tests, so "+1 (234) 55-66-77" and "+1234556677" phones are considered equal.
+     * @param o other phone
+     * @return true if type and phone are equal
+     */
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

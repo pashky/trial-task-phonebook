@@ -23,7 +23,7 @@ import java.util.List;
  *      <Town>Customerville</Town>
  * </Address>
  *
- * Immutable.
+ * Immutable. All changes are done by creating copies of this object with changed fields.
  *
  * @author pashky
  */
@@ -47,14 +47,17 @@ public final class Address implements Searchable {
     @Element(name = "PostalCode", required = false)
     private final String postalCode;
 
+    /**
+     * Town
+     */
     @Element(name = "Town", required = false)
     private final String town;
 
     /**
      * This constructor only exists to serve XML serializer
-     * @param type
-     * @param town
-     * @param postalCode
+     * @param type type
+     * @param town town
+     * @param postalCode postal code
      */
     private Address(@Element(name = "Type") AddressType type,
                     @Element(name = "Town", required = false) String town,
@@ -66,8 +69,14 @@ public final class Address implements Searchable {
         this.streetLines = Collections.emptyList();
     }
 
-    public Address(AddressType type, String town, String postalCode, Collection<String> streetLines
-    ) {
+    /**
+     * Main constructor
+     * @param type type
+     * @param town town
+     * @param postalCode postal code
+     * @param streetLines collection of street address lines
+     */
+    public Address(AddressType type, String town, String postalCode, Collection<String> streetLines) {
         if(type == null)
             throw new NullPointerException("Type can't be null");
         this.type = type;
@@ -77,42 +86,87 @@ public final class Address implements Searchable {
                 : new ArrayList<String>(streetLines);
     }
 
+    /**
+     *
+     * @return postal code
+     */
     public String getPostalCode() {
         return postalCode;
     }
 
+    /**
+     * Returns read-only collection of street lines
+     * @return list of street lines
+     */
     public List<String> getStreetLines() {
         return Collections.unmodifiableList(streetLines);
     }
 
+    /**
+     * Returns single string representation of street lines
+     * @return single string
+     */
     public String getStreetAddress() {
         return StringUtils.join(streetLines, "\n");
     }
 
+    /**
+     *
+     * @return town
+     */
     public String getTown() {
         return town;
     }
 
+    /**
+     *
+     * @return address type
+     */
     public AddressType getType() {
         return type;
     }
 
+    /**
+     * Makes a copy of this address with type changed to
+     * @param newType new type
+     * @return new address
+     */
     public Address withType(AddressType newType) {
         return new Address(newType, getTown(), getPostalCode(), getStreetLines());
     }
 
+    /**
+     * Makes a copy of this address with town changed to
+     * @param newTown new town
+     * @return new address
+     */
     public Address withTown(String newTown) {
         return new Address(getType(), newTown, getPostalCode(), getStreetLines());
     }
 
+    /**
+     * Makes a copy of this address with postal code changed to
+     * @param newPostalCode new postal code
+     * @return new address
+     */
     public Address withPostalCode(String newPostalCode) {
         return new Address(getType(), getTown(), newPostalCode, getStreetLines());
     }
 
+    /**
+     * Makes a copy of this address with street lines changed to
+     * @param newStreetLines new street lines collection
+     * @return new address
+     */
     public Address withStreetLines(Collection<String> newStreetLines) {
         return new Address(getType(), getTown(), getPostalCode(), newStreetLines);
     }
 
+    /**
+     * Equal address means exact string match for all the fields
+     * @param o other address
+     * @return true if equal
+     */
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -146,7 +200,6 @@ public final class Address implements Searchable {
                 '}';
     }
 
-    @Override
     public boolean matches(String text) {
         text = text.toLowerCase();
         return (getPostalCode() != null && getPostalCode().toLowerCase().contains(text))

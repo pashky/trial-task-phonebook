@@ -1,10 +1,15 @@
 package xml.phonebook.model;
 
 /**
- * Created 12/02/2013 15:34
+ * Interface for anything searchable
  *
  * @author pashky
  */
 public interface Searchable {
+    /**
+     * Match text in the object
+     * @param text text to search
+     * @return true if found
+     */
     boolean matches(String text);
 }

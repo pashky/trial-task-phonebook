@@ -11,7 +11,7 @@ import xml.phonebook.model.EmailType;
 import xml.phonebook.model.PhoneType;
 
 /**
- * Created 12/02/2013 15:21
+ * Helper class to get XML serializer for all out classes
  *
  * @author pashky
  */
@@ -31,6 +31,10 @@ public class SerializerFactory {
 
     private static Format format = new Format(2, "<?xml version='1.0' encoding='utf-8'?>");
 
+    /**
+     *
+     * @return serializer instance, suitable for Customer (de)serialization
+     */
     public static Serializer getSerializer() {
         return new Persister(strategy, format);
     }

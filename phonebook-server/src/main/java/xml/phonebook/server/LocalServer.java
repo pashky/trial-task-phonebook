@@ -2,7 +2,6 @@ package xml.phonebook.server;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -12,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Created 14/02/2013 07:22
+ * Embedded Jetty server class
  *
  * @author pashky
  */
@@ -24,8 +23,17 @@ public class LocalServer {
             xmlStore.read();
         } catch (IOException e) {
             // ignore, most likely it means file was not found
+            // and subsequent write attempts may success
+            e.printStackTrace();
         }
 
+        xmlStore.setWriteErrorListener(new XmlStore.WriteErrorListener() {
+            public void xmlWriteError(Throwable e) {
+                // report write error
+                // will continue to work with in-memory changes
+                e.printStackTrace();
+            }
+        });
 
         Server server = new Server(8888);
 

@@ -13,7 +13,7 @@ import java.net.URLDecoder;
 import java.util.Collection;
 
 /**
- * Created 14/02/2013 07:19
+ * Servlet for RESTful API of customers database
  *
  * @author pashky
  */

@@ -23,3 +23,12 @@ padding-top: 10px;
 	margin-bottom: 30px;
 	border-bottom: 1px solid #f0f0f0
 }
+
+.backgrid td { vertical-align: top; }
+
+.phoneCell, .emailCell, .addressCell {
+    padding-bottom: 7px;
+}
+.phoneCell b, .emailCell b, .addressCell b {
+    color: #999999;
+}

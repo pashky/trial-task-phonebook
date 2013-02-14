@@ -34,6 +34,33 @@ headerView = Backbone.View.extend({
 
 });
 
+searchView = Backbone.View.extend({
+
+    initialize: function () {
+        this.render();
+    },
+    
+    events: {
+        'click button': 'search'
+    },
+    
+    search: function() {
+        var encoded = encodeURIComponent($('input', this.el).val());
+        this.collection.url = '/customers?search=' + encoded;
+//        app.navigate("#search/" + encoded, false);
+        var self = this;
+        this.collection.fetch({success: function() {
+            self.collection.url = '/customers';
+        }});
+        return false;
+    },
+
+    render: function () {
+        $(this.el).html(this.template());
+        return this;
+    }
+});
+
 typeValueModel = Backbone.Model.extend({
     availableTypes: [{value:'TYPE',description:''}],
     initialize: function() {
@@ -164,6 +191,14 @@ addressView = Backbone.View.extend({
 });
 
 customerModel = Backbone.DeepModel.extend({
+    
+    defaults: {
+        phones: [],
+        addresses: [],
+        emails: [],
+        name: "",
+        notes: ""
+    },
 
     urlRoot: "/customers",
 //    localStorage: new Backbone.LocalStorage("customer"),
@@ -260,7 +295,7 @@ customerView = Backbone.View.extend({
                 util.showAlert('Success!', 'Customer saved successfully', 'alert-success');
             },
             error: function () {
-                util.showAlert('Error', 'An error occurred while trying to delete this item', 'alert-error');
+                util.showAlert('Error', 'An error occurred while trying to save this item', 'alert-error');
             }
         });
         
@@ -272,7 +307,7 @@ customerView = Backbone.View.extend({
             this.model.destroy({
                 success: function () {
                     alert('Customer was deleted successfully');
-                    window.history.back();
+                    app.navigate('', false);
                 }
             });
         }
@@ -296,11 +331,100 @@ customerView = Backbone.View.extend({
     
 });
 
-var appRouter = Backbone.Router.extend({
+customerCollection = Backbone.Collection.extend({
+    url: "/customers",
+    model: customerModel
+});
+
+typedArrayCell = Backgrid.Cell.extend({
+  className: "string-cell",
+
+  render: function() {
+      var avail = this.availableTypes;
+      var value = this.model.get(this.column.get("name"));
+      $(this.el).empty();
+      for(var i = 0; i < (value ? value.length : 0); ++i) {
+          $(this.el).append(this.template(_.extend({}, value[i], {
+              type: (_.findWhere(avail, { value: value[i].type }) || avail[0]).description
+          })));
+      }
+      return this;
+  }  
+});
+
+phoneCell = typedArrayCell.extend({ availableTypes: phoneModel.prototype.availableTypes });
+emailCell = typedArrayCell.extend({ availableTypes: emailModel.prototype.availableTypes });
+addressCell = typedArrayCell.extend({ availableTypes: addressModel.prototype.availableTypes });
+
+actionCell = Backgrid.Cell.extend({
+    className: "action-cell",
+    
+    events: {
+        "click .editCustomer": 'editCustomer',
+        "click .removeCustomer": 'removeCustomer'
+    },
+    
+    editCustomer: function () {
+        var id = this.model.get('id');
+        app.navigate('edit/' + id, true);
+        return false;
+    },
+    
+    removeCustomer: function () {
+        if(confirm('Are you sure you want to delete customer?')) {
+            this.model.destroy();
+        }
+        return false;
+    },
+    
+    render: function() {
+        $(this.el).html(this.template());
+        return this;
+    }
+});
+
+customerGridColumns = [
+    {
+        name: 'name',
+        label: 'Name',
+        cell: 'string'
+    },
+    {
+        name: 'phones',
+        label: 'Phone',
+        cell: phoneCell,
+        sortable: false
+    },
+    {
+        name: 'emails',
+        label: 'Email',
+        cell: emailCell,
+        sortable: false
+    },
+    {
+        name: 'addresses',
+        label: 'Address',
+        cell: addressCell,
+        sortable: false
+    },
+    {
+        name: 'notes',
+        label: 'Notes',
+        cell: 'string',
+        sortable: false
+    },
+    {
+        name: 'id',
+        label: '',
+        cell: actionCell,
+        sortable: false
+    }
+];
+
+appRouter = Backbone.Router.extend({
 
     routes: {
         ""                  : "list",
-        "page/:page"    : "list",
         "add"         : "addCustomer",
         "edit/:id"    : "editCustomer"
     },
@@ -310,25 +434,21 @@ var appRouter = Backbone.Router.extend({
         $('.header').html(this.headerView.el);
     },
 
-    list: function(page) {
-        console.log(page);
-
-        $('#content').empty();
+    list: function() {
+        var customers = new customerCollection();
+        var grid = new Backgrid.Grid({collection: customers, columns: customerGridColumns});            
+        $('#content').empty().append(new searchView({collection: customers}).render().el);
+        $("#content").append(grid.render().$el);
         
-        // var p = page ? parseInt(page, 10) : 1;
-        // var customerList = new CustomerCollection();
-        // customerList.fetch({success: function(){
-        //     $("#content").html(new CustomerListView({model: customerList, page: p}).el);
-        // }});
+        customers.fetch({success: function(){
+            //
+        }});
         this.headerView.selectMenuItem('home-menu');
     },
 
     editCustomer: function (id) {
-        console.log(id);
         var customer = new customerModel({id: id});
-        console.log(customer.url());
         customer.fetch({success: function(){
-            console.dir(customer);
             $('#content').empty().append(new customerView({model: customer}).$el);
         }});
         
@@ -344,7 +464,7 @@ var appRouter = Backbone.Router.extend({
 
 });
 
-util.loadTemplate(['typeValueView','headerView','addressView','customerView'], function() {
+util.loadTemplate(['typeValueView','headerView','addressView','customerView','phoneCell','emailCell','addressCell','actionCell','searchView'], function() {
     app = new appRouter();
     Backbone.history.start();
 });

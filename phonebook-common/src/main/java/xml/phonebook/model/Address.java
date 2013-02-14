@@ -53,6 +53,13 @@ public final class Address implements Searchable {
     @Element(name = "Town", required = false)
     private final String town;
 
+    private Address()
+    {
+        this.type = AddressType.VISITING_ADDRESS;
+        this.town = "";
+        this.postalCode = "";
+        this.streetLines = Collections.emptyList();
+    }
     /**
      * This constructor only exists to serve XML serializer
      * @param type type

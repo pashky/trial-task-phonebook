@@ -45,6 +45,7 @@ $.ajax({url: '/types', success: function (types) {
             this.collection.fetch({success: function() {
                 self.collection.url = '/customers';
             }});
+            util.hideAlert();
             return false;
         },
 
@@ -57,7 +58,7 @@ $.ajax({url: '/types', success: function (types) {
     typeValueModel = Backbone.Model.extend({
         availableTypes: [{name:'TYPE',description:''}],
         initialize: function() {
-            this.set({type: this.get('type') || this.availableTypes[0].value});
+            this.set({type: this.get('type') || this.availableTypes[0].name});
         }
     });
 
@@ -80,7 +81,7 @@ $.ajax({url: '/types', success: function (types) {
             
             $(this.el).html(this.template({
                 availTypes: avail,
-                type: type || avail[0].value,
+                type: type || avail[0].name,
                 typeDescription: getAvailDesc(avail, type),
                 value: this.model.get(this.modelValueField)
             }));
@@ -124,7 +125,7 @@ $.ajax({url: '/types', success: function (types) {
         availableTypes: availableTypes.address,
         defaults: { streetLines: [], town: "", postalCode: "" },
         initialize: function() {
-            this.set({type: this.get('type') || this.availableTypes[0].value});
+            this.set({type: this.get('type') || this.availableTypes[0].name});
         }
     });
 
@@ -275,6 +276,8 @@ $.ajax({url: '/types', success: function (types) {
         },
         
         saveCustomer: function(e) {
+            e.preventDefault();
+
             var self = this;
             
             var check = { isValid: true };//this.model.validateAll();
@@ -292,14 +295,21 @@ $.ajax({url: '/types', success: function (types) {
                 return $.trim(i.email).length > 0;
             }));
             
-            this.model.set('addresses', _.filter(this.model.get('addresses'), function(i) {
+            this.model.set('addresses', _.map(_.filter(this.model.get('addresses'), function(i) {
                 return $.trim(i.town).length + $.trim(i.postalCode).length + $.trim(i.streetLines.join('')).length > 0;
+            }), function(i) {
+                i.streetLines = _.filter(i.streetLines, function (l) { return $.trim(l).length > 0; });
+                return i;
             }));
+            
+            console.log(this.model.get('addresses'));
             
             this.model.save(null, {
                 success: function (model) {
                     self.render();
                     app.navigate('edit/' + model.id, false);
+                    header.selectMenuItem('');
+
                     util.showAlert('Success!', 'Customer saved successfully', 'alert-success');
                 },
                 error: function () {
@@ -311,15 +321,15 @@ $.ajax({url: '/types', success: function (types) {
         },
         
         deleteCustomer: function(e) {
+            e.preventDefault();
             if(confirm('Are you sure you want to delete customer?')) {
                 this.model.destroy({
                     success: function () {
-                        alert('Customer was deleted successfully');
-                        app.navigate('', false);
+                        app.navigate('', true);
+                        util.showAlert('Success!', 'Customer deleted successfully', 'alert-success');
                     }
                 });
             }
-            return false;
         },
         
         changeValue: function(event) {
@@ -381,6 +391,7 @@ $.ajax({url: '/types', success: function (types) {
         removeCustomer: function () {
             if(confirm('Are you sure you want to delete customer?')) {
                 this.model.destroy();
+                util.showAlert('Success!', 'Customer deleted successfully', 'alert-success');
             }
             return false;
         },
@@ -439,8 +450,8 @@ $.ajax({url: '/types', success: function (types) {
         },
 
         initialize: function () {
-            this.headerView = new headerView();
-            $('.header').html(this.headerView.el);
+            header = new headerView();
+            $('.header').html(header.el);
         },
 
         list: function() {
@@ -452,7 +463,8 @@ $.ajax({url: '/types', success: function (types) {
             customers.fetch({success: function(){
                 //
             }});
-            this.headerView.selectMenuItem('home-menu');
+            header.selectMenuItem('home-menu');
+            util.hideAlert();
         },
 
         editCustomer: function (id) {
@@ -461,14 +473,15 @@ $.ajax({url: '/types', success: function (types) {
                 $('#content').empty().append(new customerView({model: customer}).$el);
             }});
             
-            this.headerView.selectMenuItem();
+            header.selectMenuItem();
+            util.hideAlert();
         },
 
         addCustomer: function() {
             var customer = new customerModel({});
             $('#content').empty().append(new customerView({model: customer}).$el);
             
-            this.headerView.selectMenuItem('add-menu');
+            header.selectMenuItem('add-menu');
         }
 
     });

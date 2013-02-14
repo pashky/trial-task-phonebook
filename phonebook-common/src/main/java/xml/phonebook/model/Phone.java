@@ -16,6 +16,11 @@ public class Phone implements Searchable {
     @Element(name = "Value")
     private final String phone;
 
+    private Phone() {
+        this.type = PhoneType.HOME_PHONE;
+        this.phone = "";
+    }
+
     /**
      * Normalize phone - i.e. remove all meaningless symbols like (,),-,etc.
      * This form is used for equality tests, so "+1 (234) 55-66-77" and "+1234556677" phones are considered equal.

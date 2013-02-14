@@ -15,6 +15,10 @@ public final class Email implements Searchable {
     @Element(name = "Value")
     private final String email;
 
+    private Email() {
+        this.type = EmailType.PERSONAL_EMAIL;
+        this.email = "";
+    }
     /**
      * Create instance
      * @param type type

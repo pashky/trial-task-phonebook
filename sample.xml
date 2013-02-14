@@ -5,14 +5,14 @@
     <Notes>Conan is a customer.               
 Hello</Notes>
     <Address>
-      <Type>CORPORATE_ADDRESS</Type>
+      <Type>VISITING_ADDRESS</Type>
       <Street>åäøü Customer Street 8 B 9</Street>
       <Street>(P.O. Box 190)</Street>
-      <PostalCode>12346</PostalCode>
+      <PostalCode>12346fdsf</PostalCode>
       <Town>Customerville</Town>
     </Address>
     <Email>
-      <Type>WORK_EMAIL</Type>
+      <Type>PERSONAL_EMAIL</Type>
       <Value>c11onan.c.customer@example.com</Value>
     </Email>
     <Phone>
@@ -20,7 +20,7 @@ Hello</Notes>
       <Value>+358 555 555 555</Value>
     </Phone>
     <Phone>
-      <Type>MOBILE_PHONE</Type>
+      <Type>HOME_PHONE</Type>
       <Value>+358 50 999 999 999</Value>
     </Phone>
   </Customer>
@@ -91,7 +91,7 @@ Hello</Notes>
     </Phone>
   </Customer>
   <Customer>
-    <Name>Vasya Pupkin</Name>
+    <Name>Vasya Ivanov</Name>
     <Notes>New man</Notes>
     <Phone>
       <Type>WORK_PHONE</Type>
@@ -104,6 +104,34 @@ Hello</Notes>
     <Email>
       <Type>WORK_EMAIL</Type>
       <Value>32432432</Value>
+    </Email>
+  </Customer>
+  <Customer>
+    <Name>sdfdsf</Name>
+    <Notes>dfdsfsdf</Notes>
+    <Address>
+      <Type>VISITING_ADDRESS</Type>
+      <PostalCode>2343243241</PostalCode>
+      <Town>ewrew</Town>
+    </Address>
+    <Address>
+      <Type>CORPORATE_ADDRESS</Type>
+      <PostalCode>23432</PostalCode>
+      <Town>dsfs</Town>
+    </Address>
+    <Address>
+      <Type>VISITING_ADDRESS</Type>
+      <Street>aaa</Street>
+      <Street>vvvv</Street>
+      <PostalCode>43243242</PostalCode>
+    </Address>
+    <Email>
+      <Type>WORK_EMAIL</Type>
+      <Value>dsfdsf@sss.cc1</Value>
+    </Email>
+    <Email>
+      <Type>PERSONAL_EMAIL</Type>
+      <Value>3435435</Value>
     </Email>
   </Customer>
 </Customers>

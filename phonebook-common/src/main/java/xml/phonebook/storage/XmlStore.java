@@ -59,9 +59,10 @@ public class XmlStore {
         }
     }
 
-    private void addCustomerInternal(Customer customer) {
+    private String addCustomerInternal(Customer customer) {
         int id = idGenerator++;
         customerIndex.put(String.valueOf(id), ImmutablePair.of(customer, id));
+        return String.valueOf(id);
     }
 
     public void shutdown() {
@@ -183,10 +184,11 @@ public class XmlStore {
     }
 
     public StoredCustomer addCustomer(Customer customer) {
+        String id;
         synchronized (inMemoryLock) {
-            addCustomerInternal(customer);
+            id = addCustomerInternal(customer);
         }
         flush();
-        return new StoredCustomer(customer.getName(), customer);
+        return new StoredCustomer(id, customer);
     }
 }

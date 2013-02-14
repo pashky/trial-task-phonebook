@@ -1,4 +1,4 @@
-window.utils = {
+window.util = {
 
     loadTemplate: function(views, callback) {
 

@@ -29,12 +29,6 @@ public class ApiServlet extends HttpServlet {
         JsonHelper.instance().errorJson(error, output);
     }
 
-    private void list(Writer output) {
-    }
-
-    private void get(Writer output, String id) {
-    }
-
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Writer output = new OutputStreamWriter(resp.getOutputStream(), "utf-8");
         Reader input = new InputStreamReader(req.getInputStream(), "utf-8");
@@ -43,8 +37,8 @@ public class ApiServlet extends HttpServlet {
         try {
             String path = req.getPathInfo();
             String search = req.getParameter("search");
-            if(path.startsWith("/customers/")) {
-                String id = URLDecoder.decode(path.substring("/customers/".length()), "utf-8");
+            if(path.startsWith("/customers")) {
+                String id = path.length() >= 11 ? URLDecoder.decode(path.substring("/customers/".length()), "utf-8") : "";
                 if(!id.isEmpty() && "GET".equals(req.getMethod())) {
                     Customer customer = getXmlStore().findCustomerById(id);
                     if(customer != null) {
@@ -54,8 +48,8 @@ public class ApiServlet extends HttpServlet {
                     }
                 } else if("POST".equals(req.getMethod())) {
                     Customer customer = JsonHelper.instance().fromJson(input);
-                    getXmlStore().addCustomer(customer);
-                    JsonHelper.instance().toJson(customer, output);
+                    StoredCustomer stored = getXmlStore().addCustomer(customer);
+                    JsonHelper.instance().toJson(stored, output);
                 } else if(!id.isEmpty() && "PUT".equals(req.getMethod())) {
                     Customer customer = JsonHelper.instance().fromJson(input);
                     if(!getXmlStore().updateCustomerById(id, customer)) {

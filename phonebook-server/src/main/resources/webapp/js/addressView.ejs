@@ -31,10 +31,10 @@
     <label for="description" class="control-label">Street:</label>
 
     <div class="controls">
-        <% for(var i = 0; i < street.length; ++i) { %>
-        <input type="text" id="name" name="street.<%=i%>" value="<%- street[i] %>"/>
+        <% for(var i = 0; i < streetLines.length; ++i) { %>
+        <input type="text" id="name" name="streetLines.<%=i%>" value="<%- streetLines[i] %>"/>
         <a href="#" class="removeStreet"><i class="icon-minus-sign" data-num="<%- i %>"></i></a>
-        <% if(i == street.length - 1) { %><a href="#" class="addStreet"><i class="icon-plus-sign"></i></a><% } %>
+        <% if(i == streetLines.length - 1) { %><a href="#" class="addStreet"><i class="icon-plus-sign"></i></a><% } %>
         <br />
         <% } %>
     </div>

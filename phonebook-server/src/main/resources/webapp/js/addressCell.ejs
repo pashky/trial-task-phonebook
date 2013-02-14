@@ -1,3 +1,3 @@
-<div class="addressCell"><b><%- type %></b><br>
-<%= _.map(streetLines, _.escape).join('<br>') %><br>
-<i><%- town %>, <%- postalCode %></i><br></div>
+<div class="addressCell"><b><%- v.type %></b><br>
+<%= _.map(v.streetLines || [], _.escape).join('<br>') %><br>
+<i><%- (v.town != undefined) ? v.town : '' %>, <%- (v.postalCode != undefined) ? v.postalCode : '' %></i><br></div>

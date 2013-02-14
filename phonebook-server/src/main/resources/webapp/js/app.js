@@ -359,9 +359,9 @@ typedArrayCell = Backgrid.Cell.extend({
       var value = this.model.get(this.column.get("name"));
       $(this.el).empty();
       for(var i = 0; i < (value ? value.length : 0); ++i) {
-          $(this.el).append(this.template(_.extend({}, value[i], {
+          $(this.el).append(this.template({ v: _.extend({}, value[i], {
               type: (_.findWhere(avail, { value: value[i].type }) || avail[0]).description
-          })));
+          })}));
       }
       return this;
   }  

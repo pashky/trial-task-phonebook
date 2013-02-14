@@ -10,6 +10,7 @@ window.util = {
         $.each(views, function(index, view) {
             if (window[view]) {
                 deferreds.push($.ajax({url: 'js/' + view + '.ejs', dataType: 'text', success: function(data) {
+                    console.log(view);
                     window[view].prototype.template = _.template(data);
                 }}));
             } else {

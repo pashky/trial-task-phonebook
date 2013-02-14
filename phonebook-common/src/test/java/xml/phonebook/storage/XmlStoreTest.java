@@ -11,6 +11,7 @@ import xml.phonebook.model.*;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -74,7 +75,7 @@ public class XmlStoreTest {
                         "     <Value>+358 50 999 999 999</Value>\n" +
                         "</Phone>\n" +
                         " <Notes>                       Conan is a customer.               </Notes>\n" +
-                        "</Customer></Customers>\n", Charset.forName("utf-8"));
+                        "</Customer><Customer><Name>Another Customer</Name></Customer></Customers>\n", Charset.forName("utf-8"));
     }
 
     @After
@@ -87,7 +88,7 @@ public class XmlStoreTest {
         XmlStore store = new XmlStore(tempXml);
         store.read();
 
-        Customer c = store.findCustomerById("0");
+        StoredCustomer c = store.findCustomerById("0");
         assertNotNull(c);
         assertEquals("Conan C. Customer", c.getName());
         assertEquals(1, c.getEmails().size());
@@ -145,15 +146,69 @@ public class XmlStoreTest {
         store.shutdown();
         String result = FileUtils.readFileToString(tempXml);
 
-        System.err.println(StringUtils.join(store.findAllCustomers(), "\n"));
-
-        System.err.println(result);
-
         assertTrue(result.startsWith("<?xml version='1.0' encoding='utf-8'?>"));
         assertFalse(result.contains("<Name>Conan C. Customer</Name>"));
         assertTrue(result.contains("<Name>John Smith</Name>"));
         assertTrue(result.contains("<Name>Alex Doe</Name>"));
 
+    }
+
+    @Test
+    public void testUpdate() throws Exception {
+        XmlStore store = new XmlStore(tempXml);
+        store.read();
+        StoredCustomer c = store.findCustomerById("0");
+        store.updateCustomerById(c.getId(), c.getCustomer().withName("Renamed"));
+        store.shutdown();
+
+        String result = FileUtils.readFileToString(tempXml);
+        assertTrue(result.startsWith("<?xml version='1.0' encoding='utf-8'?>"));
+        assertTrue(result.contains("<Name>Renamed</Name>"));
+    }
+
+    @Test
+    public void testDelete() throws Exception {
+        XmlStore store = new XmlStore(tempXml);
+        store.read();
+        StoredCustomer c = store.findCustomerById("0");
+        assertTrue(store.deleteCustomerById(c.getId()));
+        assertFalse(store.deleteCustomerById("100500"));
+        store.shutdown();
+
+        String result = FileUtils.readFileToString(tempXml);
+        assertTrue(result.startsWith("<?xml version='1.0' encoding='utf-8'?>"));
+        assertFalse(result.contains("<Name>Conan C. Customer</Name>"));
+    }
+
+    @Test
+    public void testSearch() throws Exception {
+        XmlStore store = new XmlStore(tempXml);
+        store.read();
+        Collection<StoredCustomer> cs = store.findCustomersByText("conan");
+        assertEquals(1, cs.size());
+
+        cs = store.findCustomersByText("another");
+        assertEquals(1, cs.size());
+
+        cs = store.findCustomersByText("customer");
+        assertEquals(2, cs.size());
+
+        cs = store.findCustomersByText("zzzzzzz");
+        assertEquals(0, cs.size());
+
+        store.shutdown();
+    }
+
+    @Test
+    public void testAll() throws Exception {
+        XmlStore store = new XmlStore(tempXml);
+        store.read();
+        Collection<StoredCustomer> cs = store.findAllCustomers();
+        assertEquals(2, cs.size());
+        store.addCustomer(new Customer("Vasya", "one more"));
+        cs = store.findAllCustomers();
+        assertEquals(3, cs.size());
+        store.shutdown();
     }
 
 }

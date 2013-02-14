@@ -1,5 +1,7 @@
 package xml.phonebook.storage;
 
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.map.IdentityMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.simpleframework.xml.Serializer;
@@ -93,17 +95,18 @@ public class XmlStore {
             if(flushTask == null) {
                 final CustomerList list;
                 synchronized (inMemoryLock) {
+                    @SuppressWarnings("unchecked")
+                    final Map<Customer,Integer> order = (Map<Customer,Integer>)new IdentityMap();
                     List<Customer> customers = new ArrayList<Customer>();
                     for(Pair<Customer,Integer> pair : customerIndex.values()) {
                         customers.add(pair.getLeft());
+                        order.put(pair.getLeft(), pair.getRight());
                     }
-                    // TODO: sort right
-//                    Collections.sort(customers, new Comparator<Customer>() {
-//                        public int compare(Customer customer, Customer customer2) {
-//                            return customerIndex.get(customer.getName()).getRight()
-//                                    .compareTo(customerIndex.get(customer2.getName()).getRight());
-//                        }
-//                    });
+                    Collections.sort(customers, new Comparator<Customer>() {
+                        public int compare(Customer customer, Customer customer2) {
+                            return order.get(customer).compareTo(order.get(customer2));
+                        }
+                    });
                     list = new CustomerList(customers);
                 }
                 flushTask = executorService.submit(new Runnable() {
@@ -131,36 +134,48 @@ public class XmlStore {
         }
     }
 
-    public Customer findCustomerById(String id) {
+    public StoredCustomer findCustomerById(String id) {
         synchronized (inMemoryLock) {
             Pair<Customer,Integer> pair = customerIndex.get(id);
-            return pair != null ? pair.getLeft() : null;
+            return pair != null ? new StoredCustomer(id, pair.getLeft()) : null;
         }
     }
 
-    public Collection<StoredCustomer> findCustomersByText(String text) {
+    public interface Predicate {
+        boolean test(Customer c);
+    }
+
+    public Collection<StoredCustomer> findCustomers(Predicate filter) {
         final List<StoredCustomer> result = new ArrayList<StoredCustomer>();
         synchronized (inMemoryLock) {
-            for(Map.Entry<String,Pair<Customer,Integer>> e : customerIndex.entrySet()) {
-                Customer c = e.getValue().getLeft();
-                if(c.matches(text)) {
-                    result.add(new StoredCustomer(e.getKey(), c));
+            @SuppressWarnings("unchecked")
+            final Map<Customer,Integer> order = (Map<Customer,Integer>)new IdentityMap();
+            for(Map.Entry<String, Pair<Customer,Integer>> e : customerIndex.entrySet()) {
+                if(filter == null || filter.test(e.getValue().getLeft())) {
+                    order.put(e.getValue().getLeft(), e.getValue().getRight());
+                    result.add(new StoredCustomer(e.getKey(), e.getValue().getLeft()));
                 }
             }
+            Collections.sort(result, new Comparator<StoredCustomer>() {
+                public int compare(StoredCustomer a, StoredCustomer b) {
+                    return order.get(a.getCustomer()).compareTo(order.get(b.getCustomer()));
+                }
+            });
         }
         return Collections.unmodifiableCollection(result);
+    }
+
+    public Collection<StoredCustomer> findCustomersByText(final String text) {
+        return findCustomers(new Predicate() {
+            public boolean test(Customer c) {
+                return c.matches(text);
+            }
+        });
     }
 
     public Collection<StoredCustomer> findAllCustomers() {
-        final List<StoredCustomer> result = new ArrayList<StoredCustomer>();
-        synchronized (inMemoryLock) {
-            for(Map.Entry<String, Pair<Customer,Integer>> e : customerIndex.entrySet()) {
-                result.add(new StoredCustomer(e.getKey(), e.getValue().getLeft()));
-            }
-        }
-        return Collections.unmodifiableCollection(result);
+        return findCustomers(null);
     }
-
     public boolean deleteCustomerById(String id) {
         boolean result;
         synchronized (inMemoryLock) {

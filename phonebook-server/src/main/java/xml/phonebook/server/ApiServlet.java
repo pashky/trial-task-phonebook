@@ -40,7 +40,7 @@ public class ApiServlet extends HttpServlet {
             if(path.startsWith("/customers")) {
                 String id = path.length() >= 11 ? URLDecoder.decode(path.substring("/customers/".length()), "utf-8") : "";
                 if(!id.isEmpty() && "GET".equals(req.getMethod())) {
-                    Customer customer = getXmlStore().findCustomerById(id);
+                    StoredCustomer customer = getXmlStore().findCustomerById(id);
                     if(customer != null) {
                         JsonHelper.instance().toJson(customer, output);
                     } else {

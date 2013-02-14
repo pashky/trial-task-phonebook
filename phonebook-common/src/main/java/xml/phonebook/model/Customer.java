@@ -75,6 +75,14 @@ public final class Customer implements Searchable {
         return notes;
     }
 
+    public Customer withName(String name) {
+        return new Customer(name, notes, addresses, phones, emails);
+    }
+
+    public Customer withNotes(String notes) {
+        return new Customer(name, notes, addresses, phones, emails);
+    }
+
     public Customer withAddress(Address address) {
         return new Customer(name, notes, addresses.withAdded(address), phones, emails);
     }

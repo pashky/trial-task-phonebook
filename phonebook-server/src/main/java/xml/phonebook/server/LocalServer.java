@@ -20,42 +20,44 @@ public class LocalServer {
         XmlStore xmlStore = new XmlStore(new File(args.length > 0 ? args[0] :
                 "/Users/pashky/dev/arcusys/phonebook/sample.xml"));
         try {
-            xmlStore.read();
-        } catch (IOException e) {
-            // ignore, most likely it means file was not found
-            // and subsequent write attempts may success
-            e.printStackTrace();
-        }
-
-        xmlStore.setWriteErrorListener(new XmlStore.WriteErrorListener() {
-            public void xmlWriteError(Throwable e) {
-                // report write error
-                // will continue to work with in-memory changes
+            try {
+                xmlStore.read();
+            } catch (IOException e) {
+                // ignore, most likely it means file was not found
+                // and subsequent write attempts may success
                 e.printStackTrace();
             }
-        });
 
-        Server server = new Server(8888);
+            xmlStore.setWriteErrorListener(new XmlStore.WriteErrorListener() {
+                public void xmlWriteError(Throwable e) {
+                    // report write error
+                    // will continue to work with in-memory changes
+                    e.printStackTrace();
+                }
+            });
 
-        ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        server.setHandler(ctx);
-        ctx.setContextPath("/");
-        ctx.addServlet(ApiServlet.class, "/*");
-        ctx.setAttribute(ApiServlet.ATTR_XML_STORE, xmlStore);
+            Server server = new Server(8888);
 
-        ResourceHandler rsrc = new ResourceHandler();
-        rsrc.setDirectoriesListed(true);
-        rsrc.setWelcomeFiles(new String[] {"index.html"});
+            ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.SESSIONS);
+            server.setHandler(ctx);
+            ctx.setContextPath("/");
+            ctx.addServlet(ApiServlet.class, "/*");
+            ctx.setAttribute(ApiServlet.ATTR_XML_STORE, xmlStore);
 
-        rsrc.setResourceBase(LocalServer.class.getClassLoader().getResource("webapp").toExternalForm());
+            ResourceHandler rsrc = new ResourceHandler();
+            rsrc.setDirectoriesListed(true);
+            rsrc.setWelcomeFiles(new String[] {"index.html"});
 
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[] { rsrc, ctx });
-        server.setHandler(handlers);
+            rsrc.setResourceBase(LocalServer.class.getClassLoader().getResource("webapp").toExternalForm());
 
-        server.start();
-        server.join();
+            HandlerList handlers = new HandlerList();
+            handlers.setHandlers(new Handler[] { rsrc, ctx });
+            server.setHandler(handlers);
 
-        xmlStore.shutdown();
+            server.start();
+            server.join();
+        } finally {
+            xmlStore.shutdown();
+        }
     }
 }

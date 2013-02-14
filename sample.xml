@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Customers>
+  <Customer>
+    <Name>Conan C. Customer</Name>
+    <Notes>Conan is a customer.               
+Hello</Notes>
+    <Address>
+      <Type>CORPORATE_ADDRESS</Type>
+      <Street>åäøü Customer Street 8 B 9</Street>
+      <Street>(P.O. Box 190)</Street>
+      <PostalCode>12346</PostalCode>
+      <Town>Customerville</Town>
+    </Address>
+    <Email>
+      <Type>WORK_EMAIL</Type>
+      <Value>c11onan.c.customer@example.com</Value>
+    </Email>
+    <Phone>
+      <Type>WORK_PHONE</Type>
+      <Value>+358 555 555 555</Value>
+    </Phone>
+    <Phone>
+      <Type>MOBILE_PHONE</Type>
+      <Value>+358 50 999 999 999</Value>
+    </Phone>
+  </Customer>
+  <Customer>
+    <Name>Alex Doe1</Name>
+    <Address>
+      <Type>CORPORATE_ADDRESS</Type>
+      <Street>Corp Building</Street>
+      <Street>123 High Street</Street>
+      <PostalCode>455778</PostalCode>
+      <Town>Los Angeles</Town>
+    </Address>
+    <Email>
+      <Type>PERSONAL_EMAIL</Type>
+      <Value>alex.doe@mail.com</Value>
+    </Email>
+    <Phone>
+      <Type>HOME_PHONE</Type>
+      <Value>+1 234 555555</Value>
+    </Phone>
+    <Phone>
+      <Type>HOME_PHONE</Type>
+      <Value>+1 234 789923</Value>
+    </Phone>
+  </Customer>
+  <Customer>
+    <Name>John Smith</Name>
+    <Notes>out best client</Notes>
+    <Address>
+      <Type>VISITING_ADDRESS</Type>
+      <Street>dfsfdsf</Street>
+      <Street>342434</Street>
+      <Street>89999999999999</Street>
+      <PostalCode>123456</PostalCode>
+      <Town>New York</Town>
+    </Address>
+    <Email>
+      <Type>WORK_EMAIL</Type>
+      <Value>work@smith.com</Value>
+    </Email>
+    <Email>
+      <Type>PERSONAL_EMAIL</Type>
+      <Value>smith.john@mail.com</Value>
+    </Email>
+    <Phone>
+      <Type>WORK_PHONE</Type>
+      <Value>+677</Value>
+    </Phone>
+  </Customer>
+  <Customer>
+    <Name>YIyi dsfuosd</Name>
+    <Notes>jhjkhkjh</Notes>
+    <Address>
+      <Type>VISITING_ADDRESS</Type>
+      <Town>sadasd</Town>
+    </Address>
+    <Email>
+      <Type>WORK_EMAIL</Type>
+      <Value>pas@sdd.cc</Value>
+    </Email>
+    <Phone>
+      <Type>WORK_PHONE</Type>
+      <Value>+08</Value>
+    </Phone>
+    <Phone>
+      <Type>HOME_PHONE</Type>
+      <Value>+09</Value>
+    </Phone>
+  </Customer>
+  <Customer>
+    <Name>Vasya Pupkin</Name>
+    <Notes>New man</Notes>
+    <Phone>
+      <Type>WORK_PHONE</Type>
+      <Value>01201011</Value>
+    </Phone>
+  </Customer>
+  <Customer>
+    <Name>cxzcxzcxz</Name>
+    <Notes>cxzcxzczxc</Notes>
+    <Email>
+      <Type>WORK_EMAIL</Type>
+      <Value>32432432</Value>
+    </Email>
+  </Customer>
+</Customers>

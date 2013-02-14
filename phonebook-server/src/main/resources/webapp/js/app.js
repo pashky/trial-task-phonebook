@@ -290,6 +290,19 @@ customerView = Backbone.View.extend({
             return false;
         }
         
+        // filter out empty boxes
+        this.model.set('phones', _.filter(this.model.get('phones'), function(i) {
+            return $.trim(i.phone).length > 0;
+        }));
+        
+        this.model.set('emails', _.filter(this.model.get('emails'), function(i) {
+            return $.trim(i.email).length > 0;
+        }));
+        
+        this.model.set('addresses', _.filter(this.model.get('addresses'), function(i) {
+            return $.trim(i.town).length + $.trim(i.postalCode).length + $.trim(i.streetLines.join('')).length > 0;
+        }));
+        
         this.model.save(null, {
             success: function (model) {
                 self.render();

@@ -87,7 +87,7 @@ public class XmlStoreTest {
         XmlStore store = new XmlStore(tempXml);
         store.read();
 
-        Customer c = store.findCustomerById("Conan C. Customer");
+        Customer c = store.findCustomerById("0");
         assertNotNull(c);
         assertEquals("Conan C. Customer", c.getName());
         assertEquals(1, c.getEmails().size());
@@ -133,7 +133,7 @@ public class XmlStoreTest {
 
         Future<Void> f3 = service.submit(new Callable<Void>() {
             public Void call() throws Exception {
-                store.deleteCustomerById("1");
+                store.deleteCustomerById("0");
                 return null;
             }
         });

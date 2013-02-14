@@ -1,6 +1,10 @@
 package xml.phonebook.server;
 
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import xml.phonebook.storage.XmlStore;
 
@@ -24,11 +28,22 @@ public class LocalServer {
 
 
         Server server = new Server(8888);
+
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.SESSIONS);
         server.setHandler(ctx);
         ctx.setContextPath("/");
         ctx.addServlet(ApiServlet.class, "/*");
         ctx.setAttribute(ApiServlet.ATTR_XML_STORE, xmlStore);
+
+        ResourceHandler rsrc = new ResourceHandler();
+        rsrc.setDirectoriesListed(true);
+        rsrc.setWelcomeFiles(new String[] {"index.html"});
+
+        rsrc.setResourceBase(LocalServer.class.getClassLoader().getResource("webapp").toExternalForm());
+
+        HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[] { rsrc, ctx });
+        server.setHandler(handlers);
 
         server.start();
         server.join();

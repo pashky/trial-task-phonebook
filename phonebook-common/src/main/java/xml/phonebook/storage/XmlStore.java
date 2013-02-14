@@ -97,12 +97,12 @@ public class XmlStore {
                         customers.add(pair.getLeft());
                     }
                     // TODO: sort right
-                    Collections.sort(customers, new Comparator<Customer>() {
-                        public int compare(Customer customer, Customer customer2) {
-                            return customerIndex.get(customer.getName()).getRight()
-                                    .compareTo(customerIndex.get(customer2.getName()).getRight());
-                        }
-                    });
+//                    Collections.sort(customers, new Comparator<Customer>() {
+//                        public int compare(Customer customer, Customer customer2) {
+//                            return customerIndex.get(customer.getName()).getRight()
+//                                    .compareTo(customerIndex.get(customer2.getName()).getRight());
+//                        }
+//                    });
                     list = new CustomerList(customers);
                 }
                 flushTask = executorService.submit(new Runnable() {

@@ -9,6 +9,8 @@ import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility class for customers JSON (de)serialization
@@ -117,6 +119,15 @@ public class JsonHelper {
     public void toJson(Object customer, Writer json) {
         gson.toJson(customer, json);
     }
+
+    public void toJsonTypes(Writer json) {
+        Map<String,Collection<? extends AbstractType>> types = new HashMap<String, Collection<? extends AbstractType>>();
+        types.put("phone", PhoneType.values());
+        types.put("email", EmailType.values());
+        types.put("address", AddressType.values());
+        new Gson().toJson(types, json);
+    }
+
 
     /**
      * Container class for JSON error result

@@ -67,6 +67,8 @@ public class ApiServlet extends HttpServlet {
                     Collection<StoredCustomer> customers = getXmlStore().findAllCustomers();
                     JsonHelper.instance().toJson(customers, output);
                 }
+            } else if("/types".equals(path)) {
+                JsonHelper.instance().toJsonTypes(output);
             } else {
                 resp.setStatus(404);
             }

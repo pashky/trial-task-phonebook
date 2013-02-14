@@ -1,7 +1,10 @@
 package xml.phonebook.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.convert.Converter;
+
+import java.util.Collection;
 
 /**
  * Created 11/02/2013 23:20
@@ -12,7 +15,7 @@ import org.simpleframework.xml.convert.Converter;
 public final class PhoneType extends AbstractType {
     private static final Registry<PhoneType> registry = new Registry<PhoneType>(new Constructor<PhoneType>() {
         public PhoneType create(String name) {
-            return new PhoneType(name, name.toLowerCase().replaceFirst("_phone$", ""));
+            return new PhoneType(name, StringUtils.capitalize(name.toLowerCase().replaceFirst("_phone$", "")));
         }
     });
 
@@ -29,7 +32,11 @@ public final class PhoneType extends AbstractType {
         return registry;
     }
 
-    public static final PhoneType WORK_PHONE = new PhoneType("WORK_PHONE", "work");
-    public static final PhoneType HOME_PHONE = new PhoneType("HOME_PHONE", "home");
-    public static final PhoneType MOBILE_PHONE = new PhoneType("MOBILE_PHONE", "mobile");
+    public static Collection<PhoneType> values() {
+        return registry.all();
+    }
+
+    public static final PhoneType WORK_PHONE = new PhoneType("WORK_PHONE", "Work");
+    public static final PhoneType HOME_PHONE = new PhoneType("HOME_PHONE", "Home");
+    public static final PhoneType MOBILE_PHONE = new PhoneType("MOBILE_PHONE", "Mobile");
 }

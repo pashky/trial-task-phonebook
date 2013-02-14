@@ -4,15 +4,14 @@ import org.simpleframework.xml.convert.Converter;
 import org.simpleframework.xml.stream.InputNode;
 import org.simpleframework.xml.stream.OutputNode;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created 11/02/2013 23:49
  *
  * @author pashky
  */
-abstract class AbstractType {
+public abstract class AbstractType {
     protected static interface Constructor<Type extends AbstractType> {
         Type create(String name);
     }
@@ -25,11 +24,11 @@ abstract class AbstractType {
             this.constructor = constructor;
         }
 
-        public void register(Type type) {
+        public synchronized void register(Type type) {
             registry.put(type.getName(), type);
         }
 
-        public Type findByName(String name) {
+        public synchronized Type findByName(String name) {
             return registry.get(name);
         }
 
@@ -41,12 +40,14 @@ abstract class AbstractType {
             return result;
         }
 
-        @Override
+        public synchronized Collection<Type> all() {
+            return Collections.unmodifiableCollection(registry.values());
+        }
+
         public Type read(InputNode inputNode) throws Exception {
             return findOrCreateByName(inputNode.getValue());
         }
 
-        @Override
         public void write(OutputNode outputNode, Type type) throws Exception {
             outputNode.setValue(type.getName());
         }
@@ -70,7 +71,6 @@ abstract class AbstractType {
     public String getDescription() {
         return description == null ? getName() : description;
     }
-
 
     /**
      * Identity compare should be enough as those are unique

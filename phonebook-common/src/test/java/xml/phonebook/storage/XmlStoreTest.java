@@ -87,7 +87,7 @@ public class XmlStoreTest {
         XmlStore store = new XmlStore(tempXml);
         store.read();
 
-        Customer c = store.findCustomerByName("Conan C. Customer");
+        Customer c = store.findCustomerById("Conan C. Customer");
         assertNotNull(c);
         assertEquals("Conan C. Customer", c.getName());
         assertEquals(1, c.getEmails().size());
@@ -118,7 +118,6 @@ public class XmlStoreTest {
         ExecutorService service = Executors.newFixedThreadPool(3);
 
         Future<Void> f1 = service.submit(new Callable<Void>() {
-            @Override
             public Void call() throws Exception {
                 store.addCustomer(c1);
                 return null;
@@ -126,7 +125,6 @@ public class XmlStoreTest {
         });
 
         Future<Void> f2 = service.submit(new Callable<Void>() {
-            @Override
             public Void call() throws Exception {
                 store.addCustomer(c2);
                 return null;
@@ -134,9 +132,8 @@ public class XmlStoreTest {
         });
 
         Future<Void> f3 = service.submit(new Callable<Void>() {
-            @Override
             public Void call() throws Exception {
-                store.removeCustomerByName("Conan C. Customer");
+                store.deleteCustomerById("1");
                 return null;
             }
         });

@@ -7,6 +7,7 @@ import xml.phonebook.model.Customer;
 import xml.phonebook.model.CustomerList;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -19,7 +20,7 @@ public class XmlStore {
 
     private final File xmlFile;
     private Map<String,Pair<Customer,Integer>> customerIndex = new HashMap<String, Pair<Customer, Integer>>();
-    private int id = 0;
+    private int idGenerator = 0;
 
     private boolean isShutDown = false;
 
@@ -35,25 +36,32 @@ public class XmlStore {
         this.xmlFile = xmlFile;
     }
 
-    public void read() throws Exception {
+    public void read() throws IOException {
 
         CustomerList list;
         synchronized (fileAccessLock) {
             Serializer serializer = SerializerFactory.getSerializer();
             try {
                 list = serializer.read(CustomerList.class, xmlFile);
-            } catch(Exception e) {
-                throw new RuntimeException(e); // TODO what now?
+            } catch(IOException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new IOException(e);
             }
         }
 
         synchronized (inMemoryLock) {
             customerIndex.clear();
-            id = 0;
+            idGenerator = 0;
             for(Customer customer : list) {
-                customerIndex.put(customer.getName(), ImmutablePair.of(customer, id++));
+                addCustomerInternal(customer);
             }
         }
+    }
+
+    private void addCustomerInternal(Customer customer) {
+        int id = idGenerator++;
+        customerIndex.put(String.valueOf(id), ImmutablePair.of(customer, id));
     }
 
     public void shutdown() {
@@ -88,6 +96,7 @@ public class XmlStore {
                     for(Pair<Customer,Integer> pair : customerIndex.values()) {
                         customers.add(pair.getLeft());
                     }
+                    // TODO: sort right
                     Collections.sort(customers, new Comparator<Customer>() {
                         public int compare(Customer customer, Customer customer2) {
                             return customerIndex.get(customer.getName()).getRight()
@@ -121,76 +130,63 @@ public class XmlStore {
         }
     }
 
-    public Customer findCustomerByName(String name) {
+    public Customer findCustomerById(String id) {
         synchronized (inMemoryLock) {
-            Pair<Customer,Integer> pair = customerIndex.get(name);
+            Pair<Customer,Integer> pair = customerIndex.get(id);
             return pair != null ? pair.getLeft() : null;
         }
     }
 
-    public Collection<Customer> findCustomersByText(String text) {
-        final List<Customer> result = new ArrayList<Customer>();
+    public Collection<StoredCustomer> findCustomersByText(String text) {
+        final List<StoredCustomer> result = new ArrayList<StoredCustomer>();
         synchronized (inMemoryLock) {
-            for(Pair<Customer,Integer> pair : customerIndex.values()) {
-                Customer c = pair.getLeft();
+            for(Map.Entry<String,Pair<Customer,Integer>> e : customerIndex.entrySet()) {
+                Customer c = e.getValue().getLeft();
                 if(c.matches(text)) {
-                    result.add(c);
+                    result.add(new StoredCustomer(e.getKey(), c));
                 }
             }
         }
         return Collections.unmodifiableCollection(result);
     }
 
-    public Collection<Customer> findAllCustomers() {
-        final List<Customer> result = new ArrayList<Customer>();
+    public Collection<StoredCustomer> findAllCustomers() {
+        final List<StoredCustomer> result = new ArrayList<StoredCustomer>();
         synchronized (inMemoryLock) {
-            for(Pair<Customer,Integer> pair : customerIndex.values()) {
-                Customer c = pair.getLeft();
-                result.add(c);
+            for(Map.Entry<String, Pair<Customer,Integer>> e : customerIndex.entrySet()) {
+                result.add(new StoredCustomer(e.getKey(), e.getValue().getLeft()));
             }
         }
         return Collections.unmodifiableCollection(result);
     }
 
-
-    public boolean removeCustomerByName(String name) {
+    public boolean deleteCustomerById(String id) {
         boolean result;
         synchronized (inMemoryLock) {
-             result = customerIndex.remove(name) != null;
+             result = customerIndex.remove(id) != null;
         }
         flush();
         return result;
     }
 
-    public boolean removeCustomer(Customer customer) {
-        return removeCustomerByName(customer.getName());
-    }
-
-    public boolean updateCustomerByName(String name, Customer newCustomer) {
+    public boolean updateCustomerById(String id, Customer newCustomer) {
         synchronized (inMemoryLock) {
-            Pair<Customer,Integer> existing = customerIndex.get(name);
+            Pair<Customer,Integer> existing = customerIndex.get(id);
             if(existing == null) {
                 return false;
             }
 
-            customerIndex.put(name, ImmutablePair.of(newCustomer, existing.getRight()));
+            customerIndex.put(id, ImmutablePair.of(newCustomer, existing.getRight()));
         }
         flush();
         return true;
     }
 
-    public boolean updateCustomer(Customer customer, Customer newCustomer) {
-        return updateCustomerByName(customer.getName(), newCustomer);
-    }
-
-    public boolean addCustomer(Customer customer) {
+    public StoredCustomer addCustomer(Customer customer) {
         synchronized (inMemoryLock) {
-            if(customerIndex.containsKey(customer.getName())) {
-                return false;
-            }
-            customerIndex.put(customer.getName(), ImmutablePair.of(customer, id++));
+            addCustomerInternal(customer);
         }
         flush();
-        return true;
+        return new StoredCustomer(customer.getName(), customer);
     }
 }

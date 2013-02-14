@@ -156,7 +156,8 @@ public final class Customer implements Searchable {
     public boolean matches(String text) {
 
         String ltext = text.toLowerCase();
-        if(getName().contains(ltext) || getNotes().contains(ltext)) {
+        if((getName() != null && getName().toLowerCase().contains(ltext))
+                || (getNotes() != null && getNotes().toLowerCase().contains(ltext))) {
             return true;
         }
 

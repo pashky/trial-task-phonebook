@@ -149,6 +149,8 @@ public final class Address implements Searchable {
     @Override
     public boolean matches(String text) {
         text = text.toLowerCase();
-        return getPostalCode().matches(text) || getTown().matches(text) || getStreetAddress().matches(text);
+        return (getPostalCode() != null && getPostalCode().toLowerCase().contains(text))
+                || (getTown() != null && getTown().toLowerCase().contains(text))
+                || getStreetAddress().toLowerCase().contains(text);
     }
 }

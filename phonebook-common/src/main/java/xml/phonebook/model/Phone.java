@@ -73,6 +73,7 @@ public class Phone implements Searchable {
     }
 
     public boolean matches(String text) {
-        return getNormalizedPhone().contains(normalize(text));
+        String normal = normalize(text);
+        return normal.length() > 0 && getNormalizedPhone().contains(normal);
     }
 }

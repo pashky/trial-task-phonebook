@@ -32,3 +32,27 @@ padding-top: 10px;
 .phoneCell b, .emailCell b, .addressCell b {
     color: #999999;
 }
+
+.btn.dropdown-toggle {
+    width: 100px;
+}
+
+.btn.btn-success {
+    width: 278px;
+}
+
+.saveCustomer,.deleteCustomer {
+    width:100px;
+}
+
+.btn.dropdown-toggle.addressTypeDropdown {
+    width: 226px;
+}
+
+input {
+    width: 212px;
+}
+
+.removeStreet {
+    padding-left: 10px;
+}

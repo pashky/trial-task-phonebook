@@ -2,11 +2,16 @@
     <label for="name" class="control-label">Type:</label>
 
     <div class="controls">
-        <select name="type">
-            <% for(var k in availableTypes) { %>
-            <option <%= availableTypes[k].value == type ? 'selected' : '' %> value="<%- availableTypes[k].value %>"><%- availableTypes[k].description %></option>
-            <% } %>
-        </select>
+        <div class="btn-group">
+            <button class="btn dropdown-toggle addressTypeDropdown" data-toggle="dropdown"><span class="valueType"><%- getAvailDesc(availableTypes, type) %></span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <% _.each(availableTypes, function(type) { %>
+                <li><a href="<%- type.name %>"><%- type.description %></a></li>
+                <% }) %>
+            </ul>
+        </div>
         &nbsp;
         <button class="btn btn-danger removeAddress"><i class="icon-remove icon-white"></i></button>
         <span class="help-inline"></span>

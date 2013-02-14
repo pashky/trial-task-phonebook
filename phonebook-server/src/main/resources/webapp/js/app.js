@@ -88,6 +88,8 @@ $.ajax({url: '/types', success: function (types) {
         },
         
         chooseType: function(event) {
+            console.log(event.target);
+            console.log($(event.target).attr('href'));
             this.model.set({type: $(event.target).attr('href')});
             event.preventDefault();
         },
@@ -393,37 +395,38 @@ $.ajax({url: '/types', success: function (types) {
         {
             name: 'name',
             label: 'Name',
-            cell: 'string'
+            cell: 'string',
+            editable: false
         },
         {
             name: 'phones',
             label: 'Phone',
             cell: phoneCell,
-            sortable: false
+            sortable: false, editable: false
         },
         {
             name: 'emails',
             label: 'Email',
             cell: emailCell,
-            sortable: false
+            sortable: false, editable: false
         },
         {
             name: 'addresses',
             label: 'Address',
             cell: addressCell,
-            sortable: false
+            sortable: false, editable: false
         },
         {
             name: 'notes',
             label: 'Notes',
             cell: 'string',
-            sortable: false
+            sortable: false, editable: false
         },
         {
             name: 'id',
             label: '',
             cell: actionCell,
-            sortable: false
+            sortable: false, editable: false
         }
     ];
 

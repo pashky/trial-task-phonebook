@@ -9,7 +9,7 @@ window.util = {
 
         $.each(views, function(index, view) {
             if (window[view]) {
-                deferreds.push($.ajax({url: 'js/' + view + '.ejs', dataType: 'text', success: function(data) {
+                deferreds.push($.ajax({url: 'js/' + view + '.ejs?' + Math.random(), method: 'GET', dataType: 'text', success: function(data) {
                     window[view].prototype.template = _.template(data);
                 }}));
             } else {

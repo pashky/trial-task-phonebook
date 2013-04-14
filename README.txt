@@ -9,7 +9,7 @@ accessed through web browser.
 
 Sample for handled XML file format:
 
-    <Customer xmlns="http://www.arcusys.fi/customer-example">
+    <Customer xmlns="http://www.example.com/customer-example">
     <Name>Conan C. Customer</Name>
     <Address>
     <Type>VISITING_ADDRESS</Type>
